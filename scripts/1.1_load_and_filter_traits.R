@@ -15,7 +15,7 @@ fmr <- read_csv("../metabolic_rate/builds/imputed.metabolic.rate.csv", col_types
 all(df$Binomial.1.2 %in% fmr$Binomial.1.2)
 
 # Select important variables from FMR and join to df
-fmr <- fmr %>% transmute(Binomial.1.2, log10FMR.est = log10FMR_est, 
+fmr <- fmr %>% transmute(Binomial.1.2, log10fmr.est = log10FMR_est, 
                          se.fmr = (log10FMR_uprCI - log10FMR_lwrCI)/2/qnorm(0.975))
 df <- df %>% left_join(fmr, by = "Binomial.1.2")
 
@@ -28,10 +28,12 @@ dens <- dens %>% transmute(Binomial.1.2, log10dens.est,
                          se.dens = se.fit)
 df <- df %>% left_join(dens, by = "Binomial.1.2")
 
-# Filter maps
+# Select and align maps
 maps <- match(df$Binomial.1.2, rownames(current.maps))
 current.maps <- current.maps[maps, ]
 present.natural.maps <- present.natural.maps[maps, ]
+all.equal(df$Binomial.1.2, rownames(current.maps))
+all.equal(df$Binomial.1.2, rownames(present.natural.maps))
 
 # Write builds of the filtered maps
 save(current.maps, file = "builds/current.maps.filtered.RData")

@@ -2,10 +2,6 @@ library(tidyverse)
 library(tictoc)
 library(data.table)
 library(raster)
-library(viridis)  # better colors for everyone
-library(ggthemes)
-library(gridExtra)
-
 
 # Load map data (this has to ben run after the load.maps.R script)
 load("builds/current.maps.filtered.RData")
@@ -14,7 +10,13 @@ load("builds/present.natural.maps.filtered.RData")
 # Load Phylacine trait data
 df <- read_csv("builds/df.1.1.csv", col_types = cols())
 
+# Load consumption sampled dataset
 consumption.samples <- read_csv("builds/sampled.consumption.distribution.kgC.yr.km2.csv", col_types = cols())
+
+# Check that we are aligned
+all(consumption.samples$Binomial.1.2 == df$Binomial.1.2)
+
+
 consumption <- read_csv("builds/species.consumption.kgC.yr.km2.csv", col_types = cols())
 consumption.naive <- read_csv("builds/species.consumption.kgC.yr.km2.naive.csv", col_types = cols())
 
@@ -27,17 +29,7 @@ consumption.summary <- consumption.samples %>%
             median = apply(.[, -1], 1, median),
             Q05 = apply(.[, -1], 1, quantile, probs = .05),
             Q95 = apply(.[, -1], 1, quantile, probs = .95))
-
-# ggplot(consumption0, aes(x = log10(Q))) +
-#   geom_density(col = "blue") +
-#   geom_density(data = consumption.naive, col = "yellow") +
-#   geom_density(data = consumption, col = "magenta") +
-#   geom_density(data = consumption.summary, aes(x = log10(mean)), col = "red") +
-#   geom_density(data = consumption.summary, aes(x = log10(median)), col = "green") +
-#   geom_density(data = consumption.summary, aes(x = log10(Q05)), col = "green", lty = 2) +
-#   geom_density(data = consumption.summary, aes(x = log10(Q95)), col = "green", lty = 2)
-
-all(consumption.summary$Binomial.1.2 == df$Binomial.1.2)
+#
 consumption <- consumption.summary %>% mutate(Q.plant = median * df$Diet.Plant/100,
                                               Q05.plant = Q05 * df$Diet.Plant/100,
                                               Q95.plant = Q95 * df$Diet.Plant/100)
@@ -98,49 +90,25 @@ tot.pres.nat.95
 tot.pres.nat.95 - tot.current.95
 #### END TEST
 
-
 # Carbon consumption maps:
-library(rworldmap)
-library(maptools)
-newmap <- getMap(resolution = "low")
-newmap <- unionSpatialPolygons(newmap, rep(1, nrow(newmap)))
-newmap <- spTransform(newmap, crs(current.consumption.map))
-newmap <- fortify(newmap)
-
-ggplot() +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = NA)
-
 current.consumption.map.spdf <- as(current.consumption.map, "SpatialPixelsDataFrame")
 current.consumption.map.df <- as_data_frame(current.consumption.map.spdf)
 colnames(current.consumption.map.df) <- c("value", "x", "y")
-current.consumption.map.df <- current.consumption.map.df %>% mutate(time = "Current")
+current.consumption.map.df <- current.consumption.map.df %>% mutate(group = "Current")
 present.natural.consumption.map.spdf <- as(present.natural.consumption.map, "SpatialPixelsDataFrame")
 present.natural.consumption.map.df <- as_data_frame(present.natural.consumption.map.spdf)
 colnames(present.natural.consumption.map.df) <- c("value", "x", "y")
-present.natural.consumption.map.df <- present.natural.consumption.map.df %>% mutate(time = "Present natural")
+present.natural.consumption.map.df <- present.natural.consumption.map.df %>% mutate(group = "Present natural")
 consumption.map.df <- bind_rows(current.consumption.map.df, present.natural.consumption.map.df)
-
-current.consumption.plot <- ggplot(current.consumption.map.df, aes(x = x, y = y, fill = value/10^3)) +
-  facet_grid(time ~ .) +
-  geom_tile() +
-  coord_equal(ylim = range(current.consumption.map.df$y)) +
-  scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
-                     na.value = "white",
-                     limits = range(consumption.map.df$value)/10^3) +
-  theme_map() +
-  labs(subtitle = "a") +
-  theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA")
-
-present.natural.consumption.plot <- ggplot(present.natural.consumption.map.df, aes(x = x, y = y, fill = value/10^3)) +
-  facet_grid(time ~ .) +
+consumption.map.df$group <- fct_relevel(consumption.map.df$group, "Present natural")
+consumption.plot <- ggplot(consumption.map.df, aes(x = x, y = y, fill = value/10^3)) +
+  facet_grid(group ~ .) +
   geom_tile() +
   coord_equal() +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
-                     na.value = "white",
-                     limits = range(consumption.map.df$value)/10^3) +
+                     na.value = "white") +
   theme_map() +
-  labs(subtitle = "b") +
+  labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold"))
 
 # Change in consumption
@@ -155,18 +123,18 @@ change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
   geom_tile() +
   coord_equal() +
   scale_fill_gradientn(name = Difference~('%'),
-                    na.value = "white",
-                    colours = plasma(10)) +
+                       na.value = "white",
+                       colours = plasma(10)) +
   theme_map() +
-  labs(subtitle = "c") +
+  labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold"))
+change.plot
 
-g1 <- ggplotGrob(current.consumption.plot)
-g2 <- ggplotGrob(present.natural.consumption.plot)
-g3 <- ggplotGrob(change.plot)
-p1 <- gtable_rbind(g1, g2, g3)
+g1 <- ggplotGrob(consumption.plot)
+g2 <- ggplotGrob(change.plot)
+p1 <- gtable_rbind(g1, g2)
 arrangeGrob(p1) %>% plot
-ggsave("./output/fig1_v2.png", p1, width = 20, height = 23, units = "cm")
+ggsave("./output/fig1.png", p1, width = 20, height = 23, units = "cm")
 
 
 npp <- raster("../large_datasets/MOD17A3/NPP_projected_resampled_scaled_gCarbon_m2_yr.tif")
@@ -210,39 +178,19 @@ present.natural.npp.use.spdf <- as(present.natural.npp.use, "SpatialPixelsDataFr
 present.natural.npp.use.df <- as_data_frame(present.natural.npp.use.spdf)
 colnames(present.natural.npp.use.df) <- c("value", "x", "y")
 
-pn.npp.use <- present.natural.npp.use.df %>% mutate(time = "Present natural")
-cu.npp.use <- current.npp.use.df %>% mutate(time = "Current")
+pn.npp.use <- present.natural.npp.use.df %>% mutate(group = "Present natural")
+cu.npp.use <- current.npp.use.df %>% mutate(group = "Current")
 npp.use <- bind_rows(pn.npp.use, cu.npp.use)
-npp.use$time <- as.factor(npp.use$time)
-npp.use$time <- fct_relevel(npp.use$time, "Present natural")
-
-frac.npp.cu.consumption.plot <- ggplot(cu.npp.use, aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
-  geom_tile() +
-  coord_equal(ylim = range(cu.npp.use$y)) +
-  scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
-                     na.value = "grey",
-                     limits = range(npp.use$value)) +
-  theme_map() +
-  labs(subtitle = "a") +
-  theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA")
-
-cells <- change.df
-cells$value <- NA
-cells$time <- "Present natural"
-pn.npp.use2 <- bind_rows(pn.npp.use, cells)
-pn.npp.use2 <- pn.npp.use2 %>% distinct(x, y, .keep_all = TRUE)
-
-frac.npp.pn.consumption.plot <- ggplot(pn.npp.use2, aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+npp.use$group <- as.factor(npp.use$group)
+npp.use$group <- fct_relevel(npp.use$group, "Present natural")
+frac.npp.consumption.plot <- ggplot(npp.use, aes(x = x, y = y, fill = value)) +
+  facet_grid(group ~ .) +
   geom_tile() +
   coord_equal() +
-  scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
-                     na.value = "grey",
-                     limits = range(npp.use$value)) +
+  scale_fill_viridis(name = Consumption~of~current~NPP~("%"),
+                     na.value = "white") +
   theme_map() +
-  labs(subtitle = "b") +
+  labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold"))
 
 # Difference in consumption
@@ -260,15 +208,14 @@ pct.pt.diffrence.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
                        na.value = "white",
                        colours = plasma(10)) +
   theme_map() +
-  labs(subtitle = "c") +
+  labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold"))
 
-g4 <- ggplotGrob(frac.npp.cu.consumption.plot)
-g5 <- ggplotGrob(frac.npp.pn.consumption.plot)
-g6 <- ggplotGrob(pct.pt.diffrence.plot)
-p2 <- gtable_rbind(g4, g5, g6)
+g3 <- ggplotGrob(frac.npp.consumption.plot)
+g4 <- ggplotGrob(pct.pt.diffrence.plot)
+p2 <- gtable_rbind(g3, g4)
 arrangeGrob(p2) %>% plot
-ggsave("./output/fig2_v2.png", p2, width = 20, height = 23, units = "cm")
+ggsave("./output/fig2.png", p2, width = 20, height = 23, units = "cm")
 
 npp.use$value[npp.use$value == 101] <- NA
 ggplot(npp.use, aes(x = x, y = y, fill = value)) +
@@ -288,9 +235,9 @@ continents <- as_data_frame(continents)
 colnames(continents) <- c("value", "x", "y")
 continents <- continents %>% 
   transmute(x,y, continent = fct_recode(value %>% as.factor, 
-                                   "North~America" = "2", "South~America" = "5", 
-                                   "Europe" = "3", "Africa" = "4", "Asia" = "1",
-                                   "Oceania" = "6"))
+                                        "North~America" = "2", "South~America" = "5", 
+                                        "Europe" = "3", "Africa" = "4", "Asia" = "1",
+                                        "Oceania" = "6"))
 
 summary <- continents %>% 
   left_join(current.consumption.map.df, by = c("x", "y"))

@@ -8,7 +8,7 @@ library(gridExtra)
 
 
 # Load Phylacine trait data
-df <- read_csv("builds/df.1.1.csv", col_types = cols())
+df <- read_csv("builds/data.csv", col_types = cols())
 
 consumption.samples <- read_csv("builds/sampled.consumption.distribution.kgC.yr.km2.csv", col_types = cols())
 consumption.corrected <- read_csv("builds/species.consumption.kgC.yr.km2.csv", col_types = cols())

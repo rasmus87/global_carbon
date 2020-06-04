@@ -63,4 +63,4 @@ save(current.maps, file = "builds/current.maps.filtered.RData")
 save(present.natural.maps, file = "builds/present.natural.maps.filtered.RData")
 
 # Write csv of df
-write_csv(df, "builds/df.1.1.csv")
+write_csv(df, "builds/data.csv")

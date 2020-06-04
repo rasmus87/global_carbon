@@ -8,8 +8,8 @@ set.seed(42)
 load("builds/current.maps.filtered.RData")
 load("builds/present.natural.maps.filtered.RData")
 
-# Load Phylacine trait data
-df <- read_csv("builds/df.1.1.csv", col_types = cols())
+# Load data
+df <- read_csv("builds/data.csv", col_types = cols())
 
 # We sample the distributions instead
 n.samples <- 1000

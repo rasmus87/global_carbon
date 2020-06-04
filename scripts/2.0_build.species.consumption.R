@@ -78,7 +78,7 @@ write_csv(consumption, "builds/species.consumption.kgC.yr.km2.csv")
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
 biomass.consumption.kgC.yr <- 10^df$log10fmr * 365.25 / ME.carbon # Naive version
 density <- 10^df$log10density # Naive version
-Q = density * biomass.consumption.kgC.yr # [individuals / km2] * [kgC / year]
+Q = density * biomass.consumption.kgC.yr # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
 consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
 write_csv(consumption, "builds/species.consumption.kgC.yr.km2.naive.csv")
 

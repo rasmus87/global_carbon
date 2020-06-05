@@ -63,22 +63,24 @@ present.natural.consumption.map.lw <- base.map
 current.consumption.map.hi <- base.map
 present.natural.consumption.map.hi <- base.map
 
+# Summarise consumption per grid-cell
+# Transform change from [KgC / (km2 * year)] to [MgC / (km2 * year)]
 tic()
-current.consumption.map[] <- colSums(current.consumption)
+current.consumption.map[] <- colSums(current.consumption) / 10^3
 current.consumption.map[current.consumption.map == 0] <- NA
 
-current.consumption.map.lw[] <- colSums(current.consumption.lw)
+current.consumption.map.lw[] <- colSums(current.consumption.lw) / 10^3
 current.consumption.map.lw[current.consumption.map.lw == 0] <- NA
-current.consumption.map.hi[] <- colSums(current.consumption.hi)
+current.consumption.map.hi[] <- colSums(current.consumption.hi) / 10^3
 current.consumption.map.hi[current.consumption.map.hi == 0] <- NA
 toc()
 
 tic()
-present.natural.consumption.map[] <- colSums(present.natural.consumption)
+present.natural.consumption.map[] <- colSums(present.natural.consumption) / 10^3
 present.natural.consumption.map[present.natural.consumption.map == 0] <- NA
 
-present.natural.consumption.map.lw[] <- colSums(present.natural.consumption.lw)
+present.natural.consumption.map.lw[] <- colSums(present.natural.consumption.lw) / 10^3
 present.natural.consumption.map.lw[present.natural.consumption.map.lw == 0] <- NA
-present.natural.consumption.map.hi[] <- colSums(present.natural.consumption.hi)
+present.natural.consumption.map.hi[] <- colSums(present.natural.consumption.hi) / 10^3
 present.natural.consumption.map.hi[present.natural.consumption.map.hi == 0] <- NA
 toc()

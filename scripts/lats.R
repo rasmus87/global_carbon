@@ -15,7 +15,7 @@ r.pts <- spTransform(r.pts, wgs84)
 
 row.lat <- r.pts@coords[,2]
 
-write.csv(row.lat, "row.lat.csv")
+write.csv(row.lat, "builds/row.lat.csv")
 
 plot(r)
 points(r.pts)

@@ -5,7 +5,7 @@
 # [MgC / (km2 * year) * m2 * km2 / 10^6 m2 * 10^6 g / Mg * Pg / 10^15 g] = 
 # [PgC / year]
 tot.current <- sum(current.consumption.map[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
-tot.pres.nat <- sum(present.natural.consumption.map[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^3 / 10^15
+tot.pres.nat <- sum(present.natural.consumption.map[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
 diff <- tot.pres.nat - tot.current
 
 tot.current.med <- median(current.consumption.map[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
@@ -36,11 +36,11 @@ newmap <- spTransform(newmap, crs(current.consumption.map))
 newmap <- fortify(newmap)
 
 current.consumption.map.spdf <- as(current.consumption.map, "SpatialPixelsDataFrame") # [MgC / km2 / year]
-current.consumption.map.df <- as_data_frame(current.consumption.map.spdf)
+current.consumption.map.df <- as_tibble(current.consumption.map.spdf)
 colnames(current.consumption.map.df) <- c("value", "x", "y")
 current.consumption.map.df <- current.consumption.map.df %>% mutate(time = "Current")
 present.natural.consumption.map.spdf <- as(present.natural.consumption.map, "SpatialPixelsDataFrame")
-present.natural.consumption.map.df <- as_data_frame(present.natural.consumption.map.spdf)
+present.natural.consumption.map.df <- as_tibble(present.natural.consumption.map.spdf)
 colnames(present.natural.consumption.map.df) <- c("value", "x", "y")
 present.natural.consumption.map.df <- present.natural.consumption.map.df %>% mutate(time = "Present natural")
 consumption.map.df <- bind_rows(current.consumption.map.df, present.natural.consumption.map.df)
@@ -73,7 +73,7 @@ present.natural.consumption.plot <- ggplot(present.natural.consumption.map.df, a
 change <- (current.consumption.map/present.natural.consumption.map - 1)*100
 change[change > 0] <- 0
 change.spdf <- as(change, "SpatialPixelsDataFrame")
-change.df <- as_data_frame(change.spdf)
+change.df <- as_tibble(change.spdf)
 colnames(change.df) <- c("value", "x", "y")
 change.df$time <- "Difference"
 change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
@@ -131,10 +131,10 @@ present.natural.npp.use[present.natural.npp.use >= 100.5] <- 101
 
 # Turn maps into dataframes for plotting
 current.npp.use.spdf <- as(current.npp.use, "SpatialPixelsDataFrame")
-current.npp.use.df <- as_data_frame(current.npp.use.spdf)
+current.npp.use.df <- as_tibble(current.npp.use.spdf)
 colnames(current.npp.use.df) <- c("value", "x", "y")
 present.natural.npp.use.spdf <- as(present.natural.npp.use, "SpatialPixelsDataFrame")
-present.natural.npp.use.df <- as_data_frame(present.natural.npp.use.spdf)
+present.natural.npp.use.df <- as_tibble(present.natural.npp.use.spdf)
 colnames(present.natural.npp.use.df) <- c("value", "x", "y")
 
 # Combine datasets
@@ -173,7 +173,7 @@ frac.npp.pn.consumption.plot <- ggplot(pn.npp.use, aes(x = x, y = y, fill = valu
 change.pct <- current.npp.use - present.natural.npp.use
 change.pct[change.pct > 0] <- 0
 change.pct.spdf <- as(change.pct, "SpatialPixelsDataFrame")
-change.pct.df <- as_data_frame(change.pct.spdf)
+change.pct.df <- as_tibble(change.pct.spdf)
 colnames(change.pct.df) <- c("value", "x", "y")
 change.pct.df$time <- "Percentage point difference"
 pct.pt.diffrence.plot <- ggplot(change.pct.df, aes(x = x, y = y, fill = value)) +
@@ -205,5 +205,5 @@ ggplot(npp.use, aes(x = x, y = y, fill = value)) +
                      na.value = "hotpink") +
   theme_map() +
   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
-ggsave("./output/fig.S1.npp.consumption.trunc.pink.png", width = 20, height = 15, units = "cm")
+ggsave("./output/fig.S6.npp.consumption.trunc.pink.png", width = 20, height = 15, units = "cm")
 ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||

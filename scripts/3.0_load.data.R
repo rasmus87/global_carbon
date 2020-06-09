@@ -40,14 +40,20 @@ consumption <- consumption.summary %>% mutate(Q.plant = median * df$Diet.Plant/1
 
 
 # Load map data and builds consumption maps (this has to ben run after the load.maps.R script)
-load("builds/current.maps.filtered.RData")
+#load("builds/current.maps.filtered.RData")
+load("builds/current.maps.filtered.edge.lim.RData")
+current.maps <- current.maps.edge.lim
+rm(current.maps.edge.lim)
 current.consumption <- current.maps * consumption$Q.plant
 current.consumption.lw <- current.maps * consumption$ci.lw.plant
 current.consumption.hi <- current.maps * consumption$ci.hi.plant
 rm(current.maps) # Each loaded matrix is 1.7 GB ram
 gc() # R forgets to clean up
 
-load("builds/present.natural.maps.filtered.RData")
+# load("builds/present.natural.maps.filtered.RData")
+load("builds/present.natural.maps.filtered.edge.lim.RData")
+present.natural.maps <- present.natural.maps.edge.lim
+rm(present.natural.maps.edge.lim)
 present.natural.consumption <- present.natural.maps * consumption$Q.plant
 present.natural.consumption.lw <- present.natural.maps * consumption$ci.lw.plant
 present.natural.consumption.hi <- present.natural.maps * consumption$ci.hi.plant

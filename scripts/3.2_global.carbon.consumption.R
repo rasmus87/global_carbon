@@ -94,6 +94,7 @@ ggsave("./output/fig3_npp.use.png", width = 20, height = 10, units = "cm")
 
 ######### Consumption by realm and biome >>>
 # Load LTW realms
+base.map <- raster("builds/base_map.tif")
 ltw.realm <- base.map
 # old:
 # ltw.biome[] <-  raster("data/ltw_realm.tif")[]
@@ -191,9 +192,9 @@ ggplot(current.consumption, aes(period, NPP.consumption, fill = period)) +
   xlab("Continent") +
   scale_fill_brewer(type = "qual", name = "") +
   theme(axis.text.x=element_text(angle=30, vjust=.8, hjust=0.8))
-m <- glm(NPP.consumption ~ period, data = summary)
+m <- glm(NPP.consumption ~ period, data = current.consumption)
 summary(m)
-summary %>% group_by(period) %>% summarise(median(NPP.consumption, na.rm= T))
+current.consumption %>% group_by(period) %>% summarise(median(NPP.consumption, na.rm= T))
 ######### Consumption by realm and biome |||
 
 
@@ -224,12 +225,12 @@ npp.consumption.realm <- ltw.realm %>%
 #   labs(subtitle = "a) Realm") +
 #   theme(plot.subtitle = element_text(face = "bold"))
 
-glm(NPP.consumption ~ period, data = summary)
-summary %>% group_by(period) %>% summarise(median(NPP.consumption, na.rm= T))
-summary %>% group_by(period) %>% summarise(quantile(NPP.consumption, .025, na.rm= T))
-summary %>% group_by(period) %>% summarise(quantile(NPP.consumption, .975, na.rm= T))
-summary %>% group_by(period) %>% summarise(mean(NPP.consumption, na.rm= T))
-summary %>% group_by(period) %>% summarise(sd(NPP.consumption, na.rm= T))
+glm(NPP.consumption ~ period, data = npp.consumption.realm)
+npp.consumption.realm %>% group_by(period) %>% summarise(median(NPP.consumption, na.rm= T))
+npp.consumption.realm %>% group_by(period) %>% summarise(quantile(NPP.consumption, .025, na.rm= T))
+npp.consumption.realm %>% group_by(period) %>% summarise(quantile(NPP.consumption, .975, na.rm= T))
+npp.consumption.realm %>% group_by(period) %>% summarise(mean(NPP.consumption, na.rm= T))
+npp.consumption.realm %>% group_by(period) %>% summarise(sd(NPP.consumption, na.rm= T))
 
 npp.consumption.biome <- ltw.biome %>% 
   transmute(x,y, ltw = as.factor(name)) %>% 
@@ -285,8 +286,7 @@ ggplot(npp.consumption.biome, aes(ltw, NPP.consumption, fill = period)) +
 
 
 
-# IBS TEST
-######### NPP use by realm and biome >>>
+######### NPP use by continent for LTW >>>
 
 npp.consumption.ltw.continent <- ltw.realm %>% 
   transmute(x,y, ltw = as.factor(name)) %>% 
@@ -323,3 +323,4 @@ ggplot(npp.consumption.ltw.continent.duplicated %>% filter(NPP.consumption < 100
     strip.text.x = element_blank()
   )
 ggsave("./output/fig_ltw_continent.png", width = 20, height = 10, units = "cm")
+

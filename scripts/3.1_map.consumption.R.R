@@ -196,14 +196,31 @@ arrangeGrob(p2) %>% plot
 ggsave("./output/fig2_fraction_npp_consumed.png", p2, width = 20, height = 23, units = "cm")
 
 # Make a supplementary map with truncated percentages shown in pink
-npp.use$value[npp.use$value == 101] <- NA
-ggplot(npp.use, aes(x = x, y = y, fill = value)) +
+npp.cu.hot.pink <- ggplot(cu.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(time ~ .) +
   geom_tile() +
   coord_equal(ylim = range(cu.npp.use$y)) +
-  scale_fill_viridis(name = Consumption~of~current~NPP~("%"),
-                     na.value = "hotpink") +
+  scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
+                     na.value = "hotpink",
+                     limits = range(npp.use$value)) +
   theme_map() +
+  theme(plot.subtitle = element_text(face = "bold")) +
   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
-ggsave("./output/fig.S6.npp.consumption.trunc.pink.png", width = 20, height = 15, units = "cm")
+
+npp.pn.hot.pink <- ggplot(pn.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
+  facet_grid(time ~ .) +
+  geom_tile() +
+  coord_equal(ylim = range(cu.npp.use$y)) +
+  scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
+                     na.value = "hotpink",
+                     limits = range(npp.use$value)) +
+  theme_map() +
+  theme(plot.subtitle = element_text(face = "bold")) +
+  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+
+gS61 <- ggplotGrob(npp.cu.hot.pink)
+gS62 <- ggplotGrob(npp.pn.hot.pink)
+pS6 <- gtable_rbind(gS61, gS62)
+arrangeGrob(pS6) %>% plot
+ggsave("./output/fig.S6.npp.consumption.trunc.pink.png", pS6, width = 20, height = 15, units = "cm")
 ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||

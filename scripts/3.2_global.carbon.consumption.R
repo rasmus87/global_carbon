@@ -54,6 +54,7 @@ m <- glm(value ~ time + 0, data = continent.npp.consumption)
 summary(m)
 
 continent.npp.consumption %>% group_by(time) %>% summarise(median(value, na.rm= T))
+continent.npp.consumption %>% group_by(time, continent) %>% summarise(median(value, na.rm= T))
 continent.npp.consumption %>% group_by(time) %>% summarise(quantile(value, .025, na.rm= T))
 continent.npp.consumption %>% group_by(time) %>% summarise(quantile(value, .975, na.rm= T))
 continent.npp.consumption %>% group_by(time) %>% summarise(mean(value, na.rm= T))
@@ -226,10 +227,10 @@ npp.consumption.realm <- ltw.realm %>%
 #   theme(plot.subtitle = element_text(face = "bold"))
 
 glm(NPP.consumption ~ period, data = npp.consumption.realm)
+npp.consumption.realm %>% group_by(period) %>% summarise(mean(NPP.consumption, na.rm= T))
 npp.consumption.realm %>% group_by(period) %>% summarise(median(NPP.consumption, na.rm= T))
 npp.consumption.realm %>% group_by(period) %>% summarise(quantile(NPP.consumption, .025, na.rm= T))
 npp.consumption.realm %>% group_by(period) %>% summarise(quantile(NPP.consumption, .975, na.rm= T))
-npp.consumption.realm %>% group_by(period) %>% summarise(mean(NPP.consumption, na.rm= T))
 npp.consumption.realm %>% group_by(period) %>% summarise(sd(NPP.consumption, na.rm= T))
 
 npp.consumption.biome <- ltw.biome %>% 

@@ -226,12 +226,16 @@ npp.consumption.realm <- ltw.realm %>%
 #   labs(subtitle = "a) Realm") +
 #   theme(plot.subtitle = element_text(face = "bold"))
 
-glm(NPP.consumption ~ period, data = npp.consumption.realm)
-npp.consumption.realm %>% group_by(period) %>% summarise(mean(NPP.consumption, na.rm= T))
-npp.consumption.realm %>% group_by(period) %>% summarise(median(NPP.consumption, na.rm= T))
-npp.consumption.realm %>% group_by(period) %>% summarise(quantile(NPP.consumption, .025, na.rm= T))
-npp.consumption.realm %>% group_by(period) %>% summarise(quantile(NPP.consumption, .975, na.rm= T))
-npp.consumption.realm %>% group_by(period) %>% summarise(sd(NPP.consumption, na.rm= T))
+npp.consumption.realm %>% group_by(period) %>% summarise(min = min(NPP.consumption, na.rm= T),
+                                                         q025 = quantile(NPP.consumption, .025, na.rm= T),
+                                                         med = median(NPP.consumption, .025, na.rm= T),
+                                                         q975 = quantile(NPP.consumption, .975, na.rm= T), 
+                                                         max = max(NPP.consumption, na.rm= T),
+                                                         n = n(),
+                                                         mean = mean(NPP.consumption, na.rm= T),
+                                                         sd = sd(NPP.consumption, na.rm= T))
+m <- glm(NPP.consumption ~ period, data = npp.consumption.realm)
+summary(m)
 
 npp.consumption.biome <- ltw.biome %>% 
   transmute(x,y, ltw = as.factor(name)) %>% 

@@ -16,3 +16,11 @@ serengeti <- SpatialPoints(serengeti, proj4string=CRS("+init=epsg:4326"))
 r <- raster("data/Continents for terrestrial mammals.tif")
 serengeti <- spTransform(serengeti, projection(r))
 cell <- cellFromXY(r, serengeti)
+
+paste("Current:", round(current.consumption.map[cell]), "MgC/km2/yr")
+paste("Present natural:", round(present.natural.consumption.map[cell]), "MgC/km2/yr")
+
+paste("Current:", round(current.npp.use[cell]), "% of NPP")
+paste("Present natural:", round(present.natural.npp.use[cell]), "% of NPP")
+
+paste("NPP:", round(npp[cell]), "MgC/km2/yr")

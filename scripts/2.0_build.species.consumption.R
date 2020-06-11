@@ -4,10 +4,6 @@ library(tictoc)
 # Set seed to get consistent results:
 set.seed(42)
 
-# Load map data (this has to ben run after the load.maps.R script)
-load("builds/current.maps.filtered.RData")
-load("builds/present.natural.maps.filtered.RData")
-
 # Load data
 df <- read_csv("builds/data.csv", col_types = cols())
 
@@ -23,6 +19,48 @@ dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # individ
 all.equal(names(dens), df$Binomial.1.2)
 log10dens.samples <- t(sample_n(dens, n.samples))
 toc()
+
+
+# Global mammal biosmass in Carbon >>>
+# For comparison with:
+# Bar-On, Y. M., Phillips, R., & Milo, R. (2018). The biomass distribution on
+# Earth. Proceedings of the National Academy of Sciences of the United States of
+# America, 115(25), 6506–6511. https://doi.org/10.1073/pnas.1711842115
+# Following their methods dry weight is 30 % and carbon is 50 % 
+# so kgC = 0.3 * 0.5 kg wet weight = 0.15 * kg wet weight in total
+# [Pg] = [GtC] = 0.15 * BM * 
+
+library(raster)
+load("builds/current.maps.filtered.edge.lim.RData")
+load("builds/present.natural.maps.filtered.edge.lim.RData")
+n.cells.cu <- rowSums(current.maps.edge.lim[])
+n.cells.pn <- rowSums(present.natural.maps.edge.lim[])
+base.map <- raster("builds/base_map.tif")
+# dens [1/km2] * mass [g] * 10^-15 Pg/g * cell-resolution [m^2] * 10^-6 (km/m)^2
+# Pg
+
+cell.area <- prod(res(base.map)) * 10^-6 # km^2
+wet_to_carbon <- .50 * .30 # carbon.mass / wet.mass
+mass.Pg <- df$Mass.g * 10^-15 # Pg (or Gt)
+density <- 10^df$log10density # km^-2
+mass.pr.cell <- density * mass.Pg * wet_to_carbon * cell.area # Pg Carbon
+
+sum(mass.pr.cell * n.cells.cu)
+sum(mass.pr.cell * n.cells.pn)
+
+density.samples <- 10^log10dens.samples # km^-2
+mass.pr.cell.samples <- density.samples * mass.Pg * wet_to_carbon * cell.area # Pg Carbon
+mass.pr.cell.summary <- apply(mass.pr.cell.samples, 1, function(x) c(quantile(x, 0.025), median = median(x), quantile(x, 0.975)))
+mass.cu <- colSums(t(mass.pr.cell.summary) * n.cells.cu)
+mass.pn <- colSums(t(mass.pr.cell.summary) * n.cells.pn)
+
+paste0("Current mass: ", signif(mass.cu[2], 2), " PgC (95%-CI: ", signif(mass.cu[1], 2), "-", signif(mass.cu[3], 2), ")")
+paste0("Present natural mass: ", signif(mass.pn[2], 2), " PgC (95%-CI: ", signif(mass.pn[1], 2), "-", signif(mass.pn[3], 2), ")")
+
+# The paper says:
+# Current: 0.003 Pg (livestock = 0.1)
+# Present natural: 0.02 Pg
+# Global mammal biosmass in Carbon |||
 
 #Degen, A. A., Benjamin, R. W., Abdraimov, S. A., & Sarbasov, T. I. (2002).
 #Browse selection by Karakul sheep in relation to plant composition and

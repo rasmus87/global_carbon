@@ -1,0 +1,46 @@
+﻿src,Binomial.1.2,dens.pr.km2
+TetraDENSITY Quantile.025,Loxodonta_africana,0.004679582999999999
+TetraDENSITY Quantile.025,Elephas_maximus,0.129265285925
+Imputed based on TetraDENS,Loxodonta_africana,0.16
+TetraDENSITY median,Loxodonta_africana,0.174485745
+Imputed based on TetraDENS,Mammuthus_columbi,0.22
+Imputed based on TetraDENS,Elephas_antiquus,0.26
+Imputed based on TetraDENS,Elephas_namadicus,0.26
+Imputed based on TetraDENS,Mammuthus_primigenius,0.29
+Imputed based on TetraDENS,Mammut_americanum,0.38
+Imputed based on TetraDENS,Notiomastodon_platensis,0.41
+Imputed based on TetraDENS,Cuvieronius_hyodon,0.43
+Imputed based on TetraDENS,Elephas_iolensis,0.47
+PanTHERIA,Elephas_maximus,0.53
+Imputed based on TetraDENS,Stegodon_orientalis,0.62
+Imputed based on TetraDENS,Elephas_naumanii,0.64
+Imputed based on TetraDENS,Elephas_maximus,0.75
+Imputed based on TetraDENS,Stegodon_trigonocephalus,0.77
+TetraDENSITY median,Elephas_maximus,0.7833783785
+Imputed based on TetraDENS,Mammuthus_exilis,0.83
+---Empircal Kruger NatPark---,Loxodonta_africana,0.8768796510136002
+Imputed based on TetraDENS,Elephas_mnaidriensis,0.94
+Imputed based on PanTHERIA,Elephas_antiquus,0.95
+Imputed based on PanTHERIA,Elephas_namadicus,0.95
+Imputed based on TetraDENS,Stegodon_florensis,0.99
+Imputed based on PanTHERIA,Elephas_iolensis,1.15
+Imputed based on TetraDENS,Elephas_tiliensis,1.15
+Imputed based on PanTHERIA,Mammuthus_columbi,1.33
+Imputed based on PanTHERIA,Mammut_americanum,1.41
+Imputed based on PanTHERIA,Elephas_maximus,1.48
+Imputed based on PanTHERIA,Cuvieronius_hyodon,1.62
+Imputed based on PanTHERIA,Mammuthus_primigenius,1.68
+Imputed based on PanTHERIA,Notiomastodon_platensis,1.69
+Imputed based on PanTHERIA,Elephas_naumanii,2.29
+Imputed based on TetraDENS,Elephas_cypriotes,2.33
+Imputed based on PanTHERIA,Loxodonta_africana,2.63
+Imputed based on PanTHERIA,Stegodon_orientalis,2.78
+Imputed based on PanTHERIA,Elephas_mnaidriensis,3.24
+Imputed based on PanTHERIA,Stegodon_trigonocephalus,3.32
+TetraDENSITY Quantile.975,Elephas_maximus,3.7045000000000003
+Imputed based on PanTHERIA,Elephas_tiliensis,3.81
+Imputed based on PanTHERIA,Stegodon_florensis,4.28
+TetraDENSITY Quantile.975,Loxodonta_africana,4.621090908799999
+Imputed based on PanTHERIA,Mammuthus_exilis,4.74
+PanTHERIA,Loxodonta_africana,6.72
+Imputed based on PanTHERIA,Elephas_cypriotes,7.71

@@ -192,8 +192,8 @@ g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
 g23 <- ggplotGrob(pct.pt.diffrence.plot)
 p2 <- gtable_rbind(g21, g22, g23)
-arrangeGrob(p2) %>% plot
-ggsave("./output/fig2_fraction_npp_consumed.png", p2, width = 20, height = 23, units = "cm")
+# arrangeGrob(p2) %>% plot
+# ggsave("./output/fig2_fraction_npp_consumed.png", p2, width = 20, height = 23, units = "cm")
 
 # Make a supplementary map with truncated percentages shown in pink
 npp.cu.hot.pink <- ggplot(cu.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
@@ -218,9 +218,32 @@ npp.pn.hot.pink <- ggplot(pn.npp.use %>% mutate(value = na_if(value, 101)), aes(
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
+# Difference in consumption
+change.pct <- current.npp.use - present.natural.npp.use
+change.pct[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct[])
+# change.pct[change.pct > 0] <- 0
+change.pct.spdf <- as(change.pct, "SpatialPixelsDataFrame")
+change.pct.df <- as_tibble(change.pct.spdf)
+colnames(change.pct.df) <- c("value", "x", "y")
+change.pct.df$time <- "Percentage point difference"
+pct.pt.diffrence.hot.pinkt <- ggplot(change.pct.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
+  facet_grid(time ~ .) +
+  geom_tile() +
+  coord_equal(ylim = range(cu.npp.use$y)) +
+  scale_fill_gradientn(name = Difference~('%-point'),
+                       na.value = "hotpink",
+                       colours = plasma(10)) +
+  theme_map() +
+  labs(subtitle = "c") +
+  theme(plot.subtitle = element_text(face = "bold")) +
+  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+
+
 gS61 <- ggplotGrob(npp.cu.hot.pink)
 gS62 <- ggplotGrob(npp.pn.hot.pink)
-pS6 <- gtable_rbind(gS61, gS62)
+gS63 <- ggplotGrob(pct.pt.diffrence.hot.pinkt)
+# pS6 <- gtable_rbind(gS61, gS62)
+pS6 <- gtable_rbind(gS61, gS62, gS63)
 arrangeGrob(pS6) %>% plot
 ggsave("./output/fig.S6.npp.consumption.trunc.pink.png", pS6, width = 20, height = 15, units = "cm")
 ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||

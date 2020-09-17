@@ -205,6 +205,7 @@ frac.npp.pn.consumption.plot <- ggplot(pn.npp.use %>% mutate(value = na_if(value
 # Difference in consumption
 change.pct <- current.npp.use - present.natural.npp.use
 change.pct[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct[])
+
 # change.pct[change.pct > 0] <- 0
 change.pct.spdf <- as(change.pct, "SpatialPixelsDataFrame")
 change.pct.df <- as_tibble(change.pct.spdf)

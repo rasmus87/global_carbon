@@ -58,6 +58,7 @@ density.samples <- 10^log10dens.samples # km^-2
 mass.pr.cell.samples <- density.samples * mass.Pg * wet_to_carbon * cell.area # Pg Carbon
 mass.pr.cell.summary <- apply(mass.pr.cell.samples, 1, function(x) c(quantile(x, 0.025), median = median(x), quantile(x, 0.975)))
 mass.cu <- colSums(t(mass.pr.cell.summary) * n.cells.cu)
+mass.cu.mean <- colSums(t(mass.pr.cell.summary[2, ]) * n.cells.cu)
 mass.pn <- colSums(t(mass.pr.cell.summary) * n.cells.pn)
 mass.cu.r <- colSums(t(mass.pr.cell.summary) * n.cells.cu * !(df$IUCN.Status.1.2 %in% c("EP", "EX", "EW", "CR", "EN", "VU")))
 

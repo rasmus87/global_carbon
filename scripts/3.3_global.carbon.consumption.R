@@ -1,4 +1,4 @@
-# Run after 3.3_map.consumption.R
+# Run after 3.2_map.consumption.R
 
 # Load continents
 continents <- raster("data/Continents for terrestrial mammals.tif")

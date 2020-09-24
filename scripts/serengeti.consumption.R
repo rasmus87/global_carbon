@@ -24,3 +24,5 @@ paste("Current:", round(current.npp.use[cell]), "% of NPP")
 paste("Present natural:", round(present.natural.npp.use[cell]), "% of NPP")
 
 paste("NPP:", round(npp[cell]), "MgC/km2/yr")
+
+round(summary(H.Mg_km2_yr) * 45/100 / npp[cell] * 100)

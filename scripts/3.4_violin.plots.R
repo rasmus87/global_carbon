@@ -124,12 +124,12 @@ ggplot(eco.units, aes(x = x, y = y, fill = eco.unit)) +
 eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
   facet_wrap(vars(biome), nrow = 3) +
   geom_tile() +
-  coord_equal(ylim = range(wwf.biome$y)) +
+  coord_equal(ylim = range(eco.units$y), xlim = range(eco.units$x)) +
   scale_fill_viridis(name = "WWF Realm", na.value = "pink", discrete = T, option = "D") +
   ggthemes::theme_map() +
   theme(legend.position = "bottom", legend.justification = NULL) +
   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
-ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 20, height = 20, units = "cm")
+# ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 20, height = 15, units = "cm")
 
 eco.units %>% count(eco.unit)
 
@@ -231,6 +231,11 @@ colnames(ltw) <- c("value", "x", "y")
 ltw.eco.unit.consumption <- ltw[, -1] %>% 
   left_join(eco.units, by = c("x", "y")) %>% 
   left_join(npp.use, by = c("x", "y"))
+
+ltw.eco.unit.consumption %>% 
+  filter(!is.na(value)) %>% 
+  group_by(time) %>% 
+  summarise(median(value))
 
 ggplot(ltw.eco.unit.consumption, aes(x = x, y = y, fill = eco.unit)) +
   geom_tile() +

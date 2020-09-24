@@ -121,6 +121,16 @@ ggplot(eco.units, aes(x = x, y = y, fill = eco.unit)) +
   theme(legend.background = element_blank()) +
   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
+eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
+  facet_wrap(vars(biome), nrow = 3) +
+  geom_tile() +
+  coord_equal(ylim = range(wwf.biome$y)) +
+  scale_fill_viridis(name = "WWF Realm", na.value = "pink", discrete = T, option = "D") +
+  ggthemes::theme_map() +
+  theme(legend.position = "bottom", legend.justification = NULL) +
+  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 20, height = 20, units = "cm")
+
 eco.units %>% count(eco.unit)
 
 eco.units$biome <- str_replace(eco.units$biome, "Temperate Grasslands, Savannas, and Shrublands", "Temperate Grasslands to Shrublands")

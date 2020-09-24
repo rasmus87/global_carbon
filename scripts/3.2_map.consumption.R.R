@@ -1,5 +1,7 @@
 # Run after 3.0_load.data.R
 
+detach(package:cowplot)
+
 ### CACULATE TOTALT GLOBAL CONSUMPTION >>>
 # Units:  
 # [MgC / (km2 * year) * m2 * km2 / 10^6 m2 * 10^6 g / Mg * Pg / 10^15 g] = 
@@ -51,6 +53,10 @@ wwf.biome[] <- raster("data/wwf_terr_ecos_biome_raster.tif")[]
 wwf.biome[] <- wwf.biome[] == 13
 plot(wwf.biome)
 npp[wwf.biome == 1] %>% summary
+
+npp200 <- base.map
+npp200[npp[] < 200] <- 1
+plot(npp200)
 
 ggplot(data.frame(x=npp[], c = wwf.biome[] == 1), aes(x, col = c)) +
   geom_density() + 
@@ -136,7 +142,7 @@ g13 <- ggplotGrob(change.plot)
 p1 <- gtable_rbind(g11, g12, g13)
 arrangeGrob(p1) %>% plot
 ggsave("./output/fig1_carbon_consumption200.png", p1, width = 20, height = 23, units = "cm")
-# ggsave("./output/figS6_carbon_consumption_full.png", p1, width = 20, height = 23, units = "cm")
+# ggsave("./output/fig1_carbon_consumption_full.png", p1, width = 20, height = 23, units = "cm")
 ### Carbon consumption map [MgC / km2 / year] |||
 
 #### CONSUMPTION OF NPP (%) >>>
@@ -229,4 +235,13 @@ g23 <- ggplotGrob(pct.pt.diffrence.plot)
 p2 <- gtable_rbind(g21, g22, g23)
 arrangeGrob(p2) %>% plot
 ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 20, height = 23, units = "cm")
+# ggsave("./output/fig2_fraction_npp_consumed_full.png", p2, width = 20, height = 23, units = "cm")
 # ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||
+
+
+npp.use %>% group_by(time) %>% summarise(median(value, na.rm= T))
+npp.use %>% group_by(time) %>% summarise(quantile(value, .025, na.rm= T))
+npp.use %>% group_by(time) %>% summarise(quantile(value, .975, na.rm= T))
+
+npp.use %>% group_by(time) %>% summarise(mean(value, na.rm= T))
+npp.use %>% group_by(time) %>% summarise(sd(value, na.rm= T))

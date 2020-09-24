@@ -52,8 +52,9 @@ wwf.biome[] <- raster("data/wwf_terr_ecos_biome_raster.tif")[]
 
 na.cells <- which(wwf.realm[] %in% c(4, 7) | wwf.biome[] %in% c(98, 99, 128) | is.na(wwf.realm[]) | is.na(wwf.biome[]))
 madagascar <- c(33345, 33346, 33347, 33348, 33349, 33350, 33351, 33352, 33353, 33705, 33706, 33707, 33708, 33709, 33710, 33711, 33712, 33713, 34065, 34066, 34067, 34068, 34069, 34070, 34071, 34072, 34073, 34425, 34426, 34427, 34428, 34429, 34430, 34431, 34432, 34433, 34785, 34786, 34787, 34788, 34789, 34790, 34791, 34792, 34793, 35145, 35146, 35147, 35148, 35149, 35150, 35151, 35152, 35153, 35505, 35506, 35507, 35508, 35509, 35510, 35511, 35512, 35513, 35865, 35866, 35867, 35868, 35869, 35870, 35871, 35872, 35873, 36225, 36226, 36227, 36228, 36229, 36230, 36231, 36232, 36233, 36585, 36586, 36587, 36588, 36589, 36590, 36591, 36592, 36593, 36945, 36946, 36947, 36948, 36949, 36950, 36951, 36952, 36953, 37305, 37306, 37307, 37308, 37309, 37310, 37311, 37312, 37313, 37665, 37666, 37667, 37668, 37669, 37670, 37671, 37672, 37673, 38025, 38026, 38027, 38028, 38029, 38030, 38031, 38032, 38033, 38385, 38386, 38387, 38388, 38389, 38390, 38391, 38392, 38393, 38745, 38746, 38747, 38748, 38749, 38750, 38751, 38752, 38753, 39105, 39106, 39107, 39108, 39109, 39110, 39111, 39112, 39113, 39465, 39466, 39467, 39468, 39469, 39470, 39471, 39472, 39473, 39825, 39826, 39827, 39828, 39829, 39830, 39831, 39832, 39833)
-with.npp200 <- remove.areas
-na.cells <- c(na.cells, madagascar, with.npp200)
+na.cells <- c(na.cells, madagascar)
+na.cells <- c(na.cells, remove.areas)
+
 
 wwf.realm[na.cells] <- NA
 wwf.realm <- as(wwf.realm, "SpatialPixelsDataFrame")
@@ -265,6 +266,7 @@ p4c <- ggplot(ltw.eco.unit.consumption, aes(realm, value, fill = time)) +
 library(cowplot)
 p <- plot_grid(p4a, p4b, p4c, nrow = 3)
 ggsave("./output/fig4_eco_units_violins200.png", p, width = 29, height = 40, units = "cm")
+# ggsave("./output/fig4_eco_units_violins_full.png", p, width = 29, height = 40, units = "cm")
 
 
 
@@ -274,44 +276,51 @@ p3a <- ggplot(global.consumption, aes(period, NPP.consumption, fill = period)) +
   # facet_grid(. ~ biome, scale = "free", space = "free") +
   geom_violin(width = 0.7, scale = "width") +
   geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
-  theme_bw() +
+  theme_R() +
   ylab(expression((a)~Consumption~(MgC/yr/km^2))) +
   xlab(NULL) +
   scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "none"
-  ) 
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
+  )
 
-p3b <- ggplot(global.npp.consumption, aes(time, value, fill = time)) +
+p3b <- ggplot(global.npp.consumption %>% filter(!is.na(time)), aes(time, value, fill = time)) +
   # facet_grid(. ~ biome, scale = "free", space = "free") +
   geom_violin(width = 0.7, scale = "width") +
   geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
-  theme_bw() +
+  theme_R() +
   ylab("(b) Fraction of NPP consumed (%)") +
   xlab(NULL) +
   scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "none"
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
   )
 
 p3c <- ggplot(global.ltw.consumption, aes(time, value, fill = time)) +
   # facet_grid(. ~ biome, scale = "free", space = "free") +
   geom_violin(width = 0.7, scale = "width") +
   geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
-  theme_bw() +
+  theme_R() +
   ylab("(c) Fraction of NPP consumed in LTW (%)") +
   xlab(NULL) +
   scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "none"
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank()
   )
 
 p3 <- plot_grid(p3a, p3b, p3c, nrow = 1)
 p3
 ggsave("./output/fig3_global_violins200.png", p3, width = 10, height = 10, units = "cm")
+# ggsave("./output/fig3_global_violins_full.png", p3, width = 10, height = 10, units = "cm")

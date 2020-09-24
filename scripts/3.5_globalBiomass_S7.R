@@ -1,4 +1,11 @@
 library(raster)
+library(rworldmap)
+library(maptools)
+library(viridis)
+library(ggthemes)
+library(cowplot)
+
+
 load("builds/current.maps.filtered.edge.lim.RData")
 load("builds/present.natural.maps.filtered.edge.lim.RData")
 
@@ -11,10 +18,11 @@ mammal.biomass.area <- density * mass.Pg * 10^15 / 1000 # Kg / km2
 
 cu.mass <- current.maps.edge.lim * mammal.biomass.area
 cu.mass <- colSums(cu.mass)
+cu.mass[remove.areas] <- NA
 
 pn.mass <- present.natural.maps.edge.lim * mammal.biomass.area
 pn.mass <- colSums(pn.mass)
-
+pn.mass[remove.areas] <- NA
 
 continents <- raster("data/Continents for terrestrial mammals.tif")
 plot(continents, col = rainbow(n = 6))
@@ -46,10 +54,7 @@ mass.map.df <- bind_rows(cu.mass.map.spdf.df, pn.mass.map.spdf.df)
 mass <- left_join(continents, mass.map.df)
 
 
-library(rworldmap)
-library(maptools)
-library(viridis)
-library(ggthemes)
+
 base.map <- raster("builds/base_map.tif")
 newmap <- getMap(resolution = "low")
 newmap <- unionSpatialPolygons(newmap, rep(1, nrow(newmap)))
@@ -74,11 +79,6 @@ p1b <- ggplot(mass %>% filter(time == "Current"), aes(value, col = continent)) +
   xlab(Mass~(Kg/km^2)) + 
   facet_grid(rows = vars(time), scales = "free_y")
 
-library(cowplot)
-
-plot_grid(p1a, p1b, nrow = 2)
-
-
 
 p2a <- ggplot(mass %>% filter(time == "Present-natural"), aes(x = x, y = y, fill = value)) +
   facet_grid(time ~ .) +
@@ -100,4 +100,5 @@ p2b <- ggplot(mass %>% filter(time == "Present-natural"), aes(value, col = conti
 plot_grid(p1a, p2a, p1b, p2b, ncol = 2)
 
 p <- plot_grid(p1a, p1b, p2a, p2b, nrow = 4)
+p
 ggsave("./output/figS7_GlobalBiomass.png", p, width = 20, height = 25, units = "cm")

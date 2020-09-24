@@ -29,13 +29,19 @@ toc()
 # America, 115(25), 6506–6511. https://doi.org/10.1073/pnas.1711842115
 # Following their methods dry weight is 30 % and carbon is 50 % 
 # so kgC = 0.3 * 0.5 kg wet weight = 0.15 * kg wet weight in total
-# [Pg] = [GtC] = 0.15 * BM * 
+# [Pg] = [GtC] = 0.15 * BM
 
 library(raster)
 load("builds/current.maps.filtered.edge.lim.RData")
 load("builds/present.natural.maps.filtered.edge.lim.RData")
-n.cells.cu <- rowSums(current.maps.edge.lim[])
-n.cells.pn <- rowSums(present.natural.maps.edge.lim[])
+
+# REMOVE CELLS AS FROM 3.2:
+current.maps.edge.lim[, remove.areas] <- NA
+present.natural.maps.edge.lim[, remove.areas] <- NA
+### END REMOVE CELLS
+
+n.cells.cu <- rowSums(current.maps.edge.lim[], na.rm = TRUE)
+n.cells.pn <- rowSums(present.natural.maps.edge.lim[], na.rm = TRUE)
 base.map <- raster("builds/base_map.tif")
 # dens [1/km2] * mass [g] * 10^-15 Pg/g * cell-resolution [m^2] * 10^-6 (km/m)^2
 # Pg

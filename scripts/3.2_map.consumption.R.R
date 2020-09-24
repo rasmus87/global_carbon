@@ -92,17 +92,6 @@ tot.npp
 (tot.pres.nat - tot.current)/tot.npp * 100
 (tot.pres.nat.lw - tot.current.lw)/tot.npp * 100
 (tot.pres.nat.hi - tot.current.hi)/tot.npp * 100
-
-paste0("Current consumption: ", signif(tot.current/tot.npp * 100, 2), 
-       " % NPP consumed (0.25-0.975 Quantile range: ", 
-       signif(tot.current.lw/tot.npp * 100, 2), "-",
-       signif(tot.current.hi/tot.npp * 100, 2) ,")")
-paste0("Present natural consumption: ", signif(tot.pres.nat/tot.npp * 100, 2), 
-       " % NPP consumed (0.25-0.975 Quantile range: ", 
-       signif(tot.pres.nat.lw/tot.npp * 100, 2), "-",
-       round(tot.pres.nat.hi/tot.npp * 100, 2) ,")")
-
-signif(tot.pres.nat/tot.current, 2)
 #### CONSUMPTION OF NPP (%) |||
 
 

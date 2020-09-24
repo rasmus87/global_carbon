@@ -177,6 +177,12 @@ p4a <- ggplot(eco.unit.consumption, aes(realm, NPP.consumption, fill = period)) 
 eco.unit.npp.consumption <- eco.units %>% 
   full_join(npp.use, by = c("x", "y"))
 
+# Median global NPP consumption 
+eco.unit.npp.consumption %>% 
+  filter(!is.na(value)) %>% 
+  group_by(time) %>% 
+  summarise(q.025 = quantile(value, 0.025), med = quantile(value, 0.5), q.975 = quantile(value, 0.975))
+
 # Duplicate the dataset for boxplot one for global and one for eco units
 global.npp.consumption <- eco.unit.npp.consumption
 global.npp.consumption$biome <- "Global"
@@ -232,10 +238,12 @@ ltw.eco.unit.consumption <- ltw[, -1] %>%
   left_join(eco.units, by = c("x", "y")) %>% 
   left_join(npp.use, by = c("x", "y"))
 
+# Median LTW NPP consumption 
 ltw.eco.unit.consumption %>% 
   filter(!is.na(value)) %>% 
   group_by(time) %>% 
-  summarise(median(value))
+  summarise(q.025 = quantile(value, 0.025), med = quantile(value, 0.5), q.975 = quantile(value, 0.975))
+
 
 ggplot(ltw.eco.unit.consumption, aes(x = x, y = y, fill = eco.unit)) +
   geom_tile() +

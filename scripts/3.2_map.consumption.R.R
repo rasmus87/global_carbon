@@ -94,6 +94,33 @@ tot.npp
 (tot.pres.nat.hi - tot.current.hi)/tot.npp * 100
 #### CONSUMPTION OF NPP (%) |||
 
+# Consumption split by size class:
+current.consumption.200 <- current.consumption
+current.consumption.200[, remove.areas] <- 0
+all.equal(nrow(df), nrow(current.consumption.200))
+megafauna <- which(df$Mass.g >= 45000)
+current.consumption.200 <- current.consumption.200[megafauna, ]
+# Transform change from [KgC / (km2 * year)] to [MgC / (km2 * year)]
+current.consumption.200.mf.tot <- colSums(current.consumption.200) / 10^3
+tot.current.mf <- sum(current.consumption.200.mf.tot[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
+tot.current.mf
+signif(tot.current.mf/tot.current * 100, 2)
+
+signif(median(current.consumption.200.mf.tot / current.consumption.map[], na.rm = T) * 100, 2)
+
+# Consumption split by size class:
+present.natural.consumption.200 <- present.natural.consumption
+present.natural.consumption.200[, remove.areas] <- 0
+all.equal(nrow(df), nrow(present.natural.consumption.200))
+megafauna <- which(df$Mass.g >= 45000)
+present.natural.consumption.200 <- present.natural.consumption.200[megafauna, ]
+# Transform change from [KgC / (km2 * year)] to [MgC / (km2 * year)]
+present.natural.consumption.200.mf.tot <- colSums(present.natural.consumption.200) / 10^3
+tot.pres.nat.mf <- sum(present.natural.consumption.200.mf.tot[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
+tot.pres.nat.mf
+signif(tot.pres.nat.mf/tot.pres.nat * 100, 2)
+
+signif(median(present.natural.consumption.200.mf.tot / present.natural.consumption.map[], na.rm = T) * 100, 2)
 
 
 current.consumption.map.spdf <- as(current.consumption.map, "SpatialPixelsDataFrame") # [MgC / km2 / year]

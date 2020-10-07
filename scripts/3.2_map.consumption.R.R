@@ -45,8 +45,15 @@ cut <- 200
 npp2 <- npp
 npp2[] <- npp[] < cut
 plot(npp2)
-npp[npp[] < cut] <- NA
-remove.areas <- which(is.na(npp[]))
+
+full = TRUE # Plot all
+# full = FALSE # Plot 200 cut
+if(full) {
+  remove.areas <- NA # For full!
+} else {
+  npp[npp[] < cut] <- NA
+  remove.areas <- which(is.na(npp[]))  
+}
 
 npp[] <- npp[] * 1000^2 / 10^6 # Mg Carbon / km2 / yr
 
@@ -181,8 +188,11 @@ g12 <- ggplotGrob(present.natural.consumption.plot)
 g13 <- ggplotGrob(change.plot)
 p1 <- gtable_rbind(g11, g12, g13)
 arrangeGrob(p1) %>% plot
-ggsave("./output/fig1_carbon_consumption200.png", p1, width = 20, height = 23, units = "cm")
-# ggsave("./output/fig1_carbon_consumption_full.png", p1, width = 20, height = 23, units = "cm")
+if(full) {
+  ggsave("./output/fig1_carbon_consumption_full.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+} else {
+  ggsave("./output/fig1_carbon_consumption200.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+}
 ### Carbon consumption map [MgC / km2 / year] |||
 
 
@@ -267,8 +277,11 @@ g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
 g23 <- ggplotGrob(pct.pt.diffrence.plot)
 p2 <- gtable_rbind(g21, g22, g23)
 arrangeGrob(p2) %>% plot
-ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 20, height = 23, units = "cm")
-# ggsave("./output/fig2_fraction_npp_consumed_full.png", p2, width = 20, height = 23, units = "cm")
+if(full) {
+  ggsave("./output/fig2_fraction_npp_consumed_full.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+} else {
+  ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+}
 # ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||
 
 

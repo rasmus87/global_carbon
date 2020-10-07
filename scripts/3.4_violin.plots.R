@@ -84,7 +84,7 @@ eco.units <- eco.units %>%
 
 
 eco.units <- eco.units %>% 
-  mutate(realm = ifelse(realm %in% c("Nearctic", "Neotropic"), "New World", realm)) %>% 
+  mutate(realm = ifelse(realm %in% c("Nearctic", "Neotropic"), "Americas", realm)) %>% 
   mutate(biome = ifelse(biome %in% c("Temperate Broadleaf and Mixed Forests", "Temperate Coniferous Forests"), "Temperate Forests", biome)) %>% 
   mutate(biome = ifelse(biome %in% c("Tropical and Subtropical Dry Broadleaf Forests", "Tropical and subtropical grasslands, savannas, and shrublands"), "Tropical and Subtropical Grasslands to Forests", biome)) %>% 
   mutate(eco.unit = paste(realm, biome, sep = " - "))
@@ -101,11 +101,11 @@ keep.units <- c(
 "Australasia - Tropical and Subtropical Moist Broadleaf Forests",
 "Indomalaya - Tropical and Subtropical Grasslands to Forests",
 "Indomalaya - Tropical and Subtropical Moist Broadleaf Forests",
-"New World - Boreal Forests/Taiga",
-"New World - Temperate Forests",
-"New World - Temperate Grasslands, Savannas, and Shrublands",
-"New World - Tropical and Subtropical Grasslands to Forests",
-"New World - Tropical and Subtropical Moist Broadleaf Forests",
+"Americas - Boreal Forests/Taiga",
+"Americas - Temperate Forests",
+"Americas - Temperate Grasslands, Savannas, and Shrublands",
+"Americas - Tropical and Subtropical Grasslands to Forests",
+"Americas - Tropical and Subtropical Moist Broadleaf Forests",
 "Palearctic - Boreal Forests/Taiga",
 "Palearctic - Mediterranean Forests, Woodlands, and Scrub",
 "Palearctic - Temperate Forests",
@@ -121,15 +121,15 @@ ggplot(eco.units, aes(x = x, y = y, fill = eco.unit)) +
   theme(legend.background = element_blank()) +
   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
-eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
-  facet_wrap(vars(biome), nrow = 3) +
-  geom_tile() +
-  coord_equal(ylim = range(eco.units$y), xlim = range(eco.units$x)) +
-  scale_fill_viridis(name = "WWF Realm", na.value = "pink", discrete = T, option = "D") +
-  ggthemes::theme_map() +
-  theme(legend.position = "bottom", legend.justification = NULL) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
-# ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 20, height = 15, units = "cm")
+# eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
+#   facet_wrap(vars(biome), nrow = 3) +
+#   geom_tile() +
+#   coord_equal(ylim = range(eco.units$y), xlim = range(eco.units$x)) +
+#   scale_fill_viridis(name = "WWF Realm", na.value = "pink", discrete = T, option = "C") +
+#   ggthemes::theme_map() +
+#   theme(legend.position = "bottom", legend.justification = NULL) +
+#   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+# ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 20, height = 15, units = "cm", dpi = 600)
 
 eco.units %>% count(eco.unit)
 
@@ -158,20 +158,41 @@ global.consumption$realm <- "Global"
 
 eco.unit.consumption <- eco.unit.consumption %>% filter(!is.na(realm))
 
+period.colors <- c("Present natural" = "#b2df8a", "Current" = "#a6cee3")
+
 # Violin-plot
 p4a <- ggplot(eco.unit.consumption, aes(realm, NPP.consumption, fill = period)) +
-  facet_grid(. ~ biome, scale = "free", space = "free") +
-  geom_violin(width = 0.7, scale = "width") +
-  geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
+  facet_grid(cols = vars(biome), scale = "free", space = "free") +
+  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
+  geom_boxplot(
+    aes(group = interaction(realm, period)), 
+    width = 0.10,
+    col = "black",
+    position = position_dodge(width = 0.7),
+    outlier.shape = 20, 
+    outlier.size = 0.5,
+    show.legend = FALSE, 
+    fill = "black",
+  ) +
+  stat_summary(
+    fun = median,
+    geom = "point",
+    col = "white",
+    size = 1,
+    shape = 20,
+    position = position_dodge(width = 0.7)) +
   theme_bw() +
   ylab(expression((a)~Consumption~(MgC/yr/km^2))) +
   xlab(NULL) +
-  scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
+  scale_fill_manual(values = period.colors, name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "none"
-  ) 
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
+  )
+p4a
 
 ### Eco-unit consumption of NPP [%] ###
 eco.unit.npp.consumption <- eco.units %>% 
@@ -193,16 +214,34 @@ eco.unit.npp.consumption <- eco.unit.npp.consumption %>% filter(!is.na(realm))
 # Violin-plot
 p4b <- ggplot(eco.unit.npp.consumption, aes(realm, value, fill = time)) +
   facet_grid(. ~ biome, scale = "free", space = "free") +
-  geom_violin(width = 0.7, scale = "width") +
-  geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
+  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
+  geom_boxplot(
+    aes(group = interaction(realm, time)), 
+    width = 0.10,
+    col = "black",
+    position = position_dodge(width = 0.7),
+    outlier.shape = 20, 
+    outlier.size = 0.5,
+    show.legend = FALSE, 
+    fill = "black",
+  ) +
+  stat_summary(
+    fun = median,
+    geom = "point",
+    col = "white",
+    size = 1,
+    shape = 20,
+    position = position_dodge(width = 0.7)) +
   theme_bw() +
   ylab("(b) Fraction of NPP consumed (%)") +
   xlab(NULL) +
-  scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
+  scale_fill_manual(values = period.colors, name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "none"
+    legend.position = "none",
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
   )
 
 
@@ -273,36 +312,74 @@ ltw.eco.unit.consumption <- ltw.eco.unit.consumption %>%
 
 p4c <- ggplot(ltw.eco.unit.consumption, aes(realm, value, fill = time)) +
   facet_grid(. ~ biome, scale = "free", space = "free") +
-  geom_violin(width = 0.7, scale = "width") +
-  geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
+  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
+  geom_boxplot(
+    aes(group = interaction(realm, time)), 
+    width = 0.10,
+    col = "black",
+    position = position_dodge(width = 0.7),
+    outlier.shape = 20, 
+    outlier.size = 0.5,
+    show.legend = FALSE, 
+    fill = "black",
+  ) +
+  stat_summary(
+    fun = median,
+    geom = "point",
+    col = "white",
+    size = 1,
+    shape = 20,
+    position = position_dodge(width = 0.7),
+    show.legend = FALSE) +
   theme_bw() +
   ylab("(c) Fraction of NPP consumed in LTW (%)") +
   xlab(NULL) +
-  scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
+  scale_fill_manual(values = period.colors, name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "bottom"
+    legend.position = "bottom",
+    panel.grid.minor = element_blank(),
+    panel.grid.major.x = element_blank()
   )
-
+p4c
 
 library(cowplot)
 p <- plot_grid(p4a, p4b, p4c, nrow = 3)
-ggsave("./output/fig4_eco_units_violins200.png", p, width = 29, height = 40, units = "cm")
-# ggsave("./output/fig4_eco_units_violins_full.png", p, width = 29, height = 40, units = "cm")
+
+if(full) {
+  ggsave("./output/fig4_eco_units_violins_full.png", p, width = 183, height = 220, units = "mm", dpi = 600, scale = 1.5)
+} else {
+  ggsave("./output/fig4_eco_units_violins200.png", p, width = 183, height = 220, units = "mm", dpi = 600, scale = 1.5)
+}
 
 
 
 # Global plots
 
 p3a <- ggplot(global.consumption, aes(period, NPP.consumption, fill = period)) +
-  # facet_grid(. ~ biome, scale = "free", space = "free") +
-  geom_violin(width = 0.7, scale = "width") +
-  geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
+  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
+  geom_boxplot(
+    aes(group = interaction(realm, period)), 
+    width = 0.10,
+    col = "black",
+    position = position_dodge(width = 0.7),
+    outlier.shape = 20, 
+    outlier.size = 0.5,
+    show.legend = FALSE, 
+    fill = "black",
+  ) +
+  stat_summary(
+    fun = median,
+    geom = "point",
+    col = "white",
+    size = 1,
+    shape = 20,
+    position = position_dodge(width = 0.7)) +
   theme_R() +
   ylab(expression((a)~Consumption~(MgC/yr/km^2))) +
   xlab(NULL) +
-  scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
+  scale_fill_manual(values = period.colors, name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
@@ -312,13 +389,28 @@ p3a <- ggplot(global.consumption, aes(period, NPP.consumption, fill = period)) +
   )
 
 p3b <- ggplot(global.npp.consumption %>% filter(!is.na(time)), aes(time, value, fill = time)) +
-  # facet_grid(. ~ biome, scale = "free", space = "free") +
-  geom_violin(width = 0.7, scale = "width") +
-  geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
+  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
+  geom_boxplot(
+    aes(group = interaction(realm, time)), 
+    width = 0.10,
+    col = "black",
+    position = position_dodge(width = 0.7),
+    outlier.shape = 20, 
+    outlier.size = 0.5,
+    show.legend = FALSE, 
+    fill = "black",
+  ) +
+  stat_summary(
+    fun = median,
+    geom = "point",
+    col = "white",
+    size = 1,
+    shape = 20,
+    position = position_dodge(width = 0.7)) +
   theme_R() +
   ylab("(b) Fraction of NPP consumed (%)") +
   xlab(NULL) +
-  scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
+  scale_fill_manual(values = period.colors, name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
@@ -328,13 +420,28 @@ p3b <- ggplot(global.npp.consumption %>% filter(!is.na(time)), aes(time, value, 
   )
 
 p3c <- ggplot(global.ltw.consumption, aes(time, value, fill = time)) +
-  # facet_grid(. ~ biome, scale = "free", space = "free") +
-  geom_violin(width = 0.7, scale = "width") +
-  geom_boxplot(width = 0.15, position = position_dodge(width = 0.7), outlier.shape = NA, show.legend = FALSE) +
+  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
+  geom_boxplot(
+    aes(group = interaction(realm, time)), 
+    width = 0.10,
+    col = "black",
+    position = position_dodge(width = 0.7),
+    outlier.shape = 20, 
+    outlier.size = 0.5,
+    show.legend = FALSE, 
+    fill = "black",
+  ) +
+  stat_summary(
+    fun = median,
+    geom = "point",
+    col = "white",
+    size = 1,
+    shape = 20,
+    position = position_dodge(width = 0.7)) +
   theme_R() +
   ylab("(c) Fraction of NPP consumed in LTW (%)") +
   xlab(NULL) +
-  scale_fill_manual(values = c("Present natural" = "chartreuse3", "Current" = "#FFD18D"), name = "Period") +
+  scale_fill_manual(values = period.colors, name = "Period") +
   theme(
     strip.text.x = element_text(size = 5.4),
     axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
@@ -344,6 +451,9 @@ p3c <- ggplot(global.ltw.consumption, aes(time, value, fill = time)) +
   )
 
 p3 <- plot_grid(p3a, p3b, p3c, nrow = 1)
-p3
-ggsave("./output/fig3_global_violins200.png", p3, width = 10, height = 10, units = "cm")
-# ggsave("./output/fig3_global_violins_full.png", p3, width = 10, height = 10, units = "cm")
+
+if(full) {
+  ggsave("./output/fig3_global_violins_full.png", p3, width = 89, height = 89, units = "mm", dpi = 600, scale = 1.5)
+} else {
+  ggsave("./output/fig3_global_violins200.png", p3, width = 89, height = 89, units = "mm", dpi = 600, scale = 1.5)
+}

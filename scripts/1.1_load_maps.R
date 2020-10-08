@@ -45,16 +45,18 @@ opts <- list(progress = progress)
 timestamp()
 tic()
 current.maps <- foreach(i = 1:n,                         
-                        .packages = c('raster'), 
+                        .packages = c('rgdal'), 
                         .combine = rbind,
                         .inorder = TRUE,
                         .options.snow = opts) %dopar% {
-                          getValues(raster(current.maps.df$map[i]))
+                          # getValues(raster(current.maps.df$map[i]))
+                          readGDAL(current.maps.df$map[i], silent = TRUE)@data$band1
                         }
 
 toc()
 rownames(current.maps) <- current.maps.df$bin
-save(current.maps, file = "builds/current.maps.filtered.RData")
+mode(current.maps) <- "integer"
+saveRDS(current.maps, file = "builds/current.maps.filtered.rds")
 
 n <- nrow(present.natural.maps.df)
 pb <- txtProgressBar(max = n, style = 3)
@@ -64,29 +66,36 @@ opts <- list(progress = progress)
 timestamp()
 tic()
 present.natural.maps <- foreach(i = 1:n,                         
-                                .packages = c('raster'), 
+                                .packages = c('rgdal'), 
                                 .combine = rbind,
                                 .inorder = TRUE,
                                 .options.snow = opts) %dopar% {
-                                  getValues(raster(present.natural.maps.df$map[i]))
+                                  # getValues(raster(present.natural.maps.df$map[i]))
+                                  readGDAL(present.natural.maps.df$map[i], silent = TRUE)@data$band1
                                 }
 
 toc()
 rownames(present.natural.maps) <- present.natural.maps.df$bin
-save(present.natural.maps, file = "builds/present.natural.maps.filtered.RData")
+mode(present.natural.maps) <- "integer"
+saveRDS(present.natural.maps, file = "builds/present.natural.maps.filtered.rds")
 
 stopCluster(cl)
 
-# load("builds/current.maps.RData")
-# load("builds/present.natural.maps.RData")
+# current.maps <- readRDS("builds/current.maps.rds")
+# present.natural.maps <- readRDS("builds/present.natural.maps.rds")
 
 library(tools)
 # Data from Phylacine v. 1.2.1
 sum(current.maps)
 # 745516
-md5sum("builds/current.maps.filtered.RData")
-# "a0af2cce75e3785678389985d45b9b3f" 
+md5sum("builds/current.maps.filtered.rds")
+# "8e4042ce20ab692b6b58f3eb362ec613" 
+stopifnot(md5sum("builds/current.maps.filtered.rds") == "8e4042ce20ab692b6b58f3eb362ec613")
+
 sum(present.natural.maps)
 # 956180
-md5sum("builds/present.natural.maps.filtered.RData")
-# "ea21960aa3dabbfd99a1ac142e3b65af"
+md5sum("builds/present.natural.maps.filtered.rds")
+# "b1c03ea7178e54f19d761a8065fb98a1"
+stopifnot(md5sum("builds/present.natural.maps.filtered.rds") == "b1c03ea7178e54f19d761a8065fb98a1")
+
+

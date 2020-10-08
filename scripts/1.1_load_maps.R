@@ -81,8 +81,8 @@ saveRDS(present.natural.maps, file = "builds/present.natural.maps.filtered.rds")
 
 stopCluster(cl)
 
-# current.maps <- readRDS("builds/current.maps.rds")
-# present.natural.maps <- readRDS("builds/present.natural.maps.rds")
+# current.maps <- readRDS("builds/current.maps.filtered.rds")
+# present.natural.maps <- readRDS("builds/present.natural.maps.filtered.rds")
 
 library(tools)
 # Data from Phylacine v. 1.2.1

@@ -46,8 +46,8 @@ npp2 <- npp
 npp2[] <- npp[] < cut
 plot(npp2)
 
-full = TRUE # Plot all
-# full = FALSE # Plot 200 cut
+# full = TRUE # Plot all
+full = FALSE # Plot 200 cut
 if(full) {
   remove.areas <- NA # For full!
 } else {
@@ -289,5 +289,5 @@ npp.use %>% group_by(time) %>% summarise(median(value, na.rm= T))
 npp.use %>% group_by(time) %>% summarise(quantile(value, .025, na.rm= T))
 npp.use %>% group_by(time) %>% summarise(quantile(value, .975, na.rm= T))
 
-npp.use %>% group_by(time) %>% summarise(mean(value, na.rm= T))
-npp.use %>% group_by(time) %>% summarise(sd(value, na.rm= T))
+# npp.use %>% group_by(time) %>% summarise(mean(value, na.rm= T))
+# npp.use %>% group_by(time) %>% summarise(sd(value, na.rm= T))

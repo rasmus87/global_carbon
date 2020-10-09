@@ -32,7 +32,7 @@ for(i in 1:N) {
   # above
   if(i %in% 1:cols) {
     # top row
-    above = (cols:1)[i]
+    above = ifelse(i <= cols/2, i + cols/2, i - cols/2)
   } else {
     above = i - cols
   }
@@ -40,9 +40,7 @@ for(i in 1:N) {
   # below
   if(i %in% N:(N-cols+1)) {
     # bottom row
-    j = i %% cols
-    if(j == 0) j <- 360
-    below = N - cols + (cols:1)[j]
+    below = ifelse(i %% cols <= cols/2, i + cols/2, i - cols/2)
   } else {
     below = i + cols
   }
@@ -50,10 +48,12 @@ for(i in 1:N) {
   neighbours[i, ] <- c(left, right, above, below)
 }
 
+# Reduce the cells with missing neighbours
 reduce_range_edge <- function(species.range) {
   for(i in which(species.range == 1)) {
+    # Rooks case neighbours + 1:
     j <- sum(species.range[neighbours[i, ]] > 0) + 1
-    if(j == 5) next
+    if(j == 5) next # Next; all here
     reduction.factor <- c(1/9, 1/6, 1/4, 1/2)[j]
     species.range[i] <- species.range[i] * reduction.factor
   }

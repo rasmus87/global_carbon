@@ -112,29 +112,22 @@ keep.units <- c(
 "Palearctic - Temperate Grasslands, Savannas, and Shrublands")
 
 eco.units <- eco.units %>% filter(eco.unit %in% keep.units)
-
-ggplot(eco.units, aes(x = x, y = y, fill = eco.unit)) +
-  geom_tile() +
-  coord_equal(ylim = range(wwf.biome$y)) +
-  scale_fill_viridis(name = "WWF biome", na.value = "pink", discrete = T, option = "D") +
-  theme_map() +
-  theme(legend.background = element_blank()) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
-
-# eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
-#   facet_wrap(vars(biome), nrow = 3) +
-#   geom_tile() +
-#   coord_equal(ylim = range(eco.units$y), xlim = range(eco.units$x)) +
-#   scale_fill_viridis(name = "WWF Realm", na.value = "pink", discrete = T, option = "C") +
-#   ggthemes::theme_map() +
-#   theme(legend.position = "bottom", legend.justification = NULL) +
-#   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
-# ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 20, height = 15, units = "cm", dpi = 600)
-
 eco.units %>% count(eco.unit)
 
 eco.units$biome <- str_replace(eco.units$biome, "Temperate Grasslands, Savannas, and Shrublands", "Temperate Grasslands to Shrublands")
 eco.units$biome <- str_replace(eco.units$biome, "Mediterranean Forests, Woodlands, and Scrub", "Mediterranean Forests to Scrub")
+
+# cols <- c("#1b9e77", "#d95f02", "#e7298a", "#66a61e", "#7570b3")
+# eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
+#   facet_wrap(vars(biome), nrow = 3) +
+#   geom_tile() +
+#   coord_equal(ylim = range(eco.units$y), xlim = range(eco.units$x)) +
+#   scale_fill_manual(name = "WWF Realm", na.value = "pink", values = cols) +
+#   ggthemes::theme_map() +
+#   theme(legend.position = "bottom", legend.justification = NULL) +
+#   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+# ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 183, height = 137, units = "mm", dpi = 600)
+
 
 theme_R <- function() {
   theme_bw() %+replace% 

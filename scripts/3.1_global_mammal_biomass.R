@@ -32,8 +32,8 @@ toc()
 # [Pg] = [GtC] = 0.15 * BM
 
 library(raster)
-load("builds/current.maps.filtered.edge.lim.RData")
-load("builds/present.natural.maps.filtered.edge.lim.RData")
+current.maps.edge.lim <- readRDS("builds/current.maps.filtered.edge.lim.RData")
+present.natural.maps.edge.lim <- readRDS("builds/present.natural.maps.filtered.edge.lim.RData")
 
 # REMOVE CELLS AS FROM 3.2:
 current.maps.edge.lim[, remove.areas] <- NA

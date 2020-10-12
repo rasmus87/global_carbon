@@ -86,9 +86,9 @@ tot.current.hi <- sum(current.consumption.map.hi[] * prod(res(current.consumptio
 tot.pres.nat.hi <- sum(present.natural.consumption.map.hi[] * prod(res(current.consumption.map.hi))/10^6, na.rm = T) * 10^6 / 10^15
 diff.hi <- tot.pres.nat.hi - tot.current.hi
 
-paste0("Current consumption: ", round(tot.current), " Pg Carbon / year (95%-CI: ", round(tot.current.lw), "-", round(tot.current.hi) ,")")
-paste0("Present natural consumption: ", round(tot.pres.nat), " Pg Carbon / year (95%-CI: ", round(tot.pres.nat.lw), "-", round(tot.pres.nat.hi) ,")")
-paste0("Difference: ", round(diff), " Pg Carbon / year (95%-CI: ", round(diff.lw), "-", round(diff.hi) ,")")
+paste0("Current consumption: ", signif(tot.current, 2), " Pg Carbon / year (95%-CI: ", signif(tot.current.lw, 2), "-", signif(tot.current.hi, 2) ,")")
+paste0("Present natural consumption: ", signif(tot.pres.nat, 2), " Pg Carbon / year (95%-CI: ", signif(tot.pres.nat.lw, 2), "-", signif(tot.pres.nat.hi, 2) ,")")
+paste0("Difference: ", signif(diff, 2), " Pg Carbon / year (95%-CI: ", signif(diff.lw, 2), "-", signif(diff.hi, 2) ,")")
 ### CACULATE TOTALT GLOBAL CONSUMPTION |||
 
 #### CONSUMPTION OF NPP (%) >>>
@@ -284,10 +284,9 @@ if(full) {
 }
 # ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||
 
-
-npp.use %>% group_by(time) %>% summarise(median(value, na.rm= T))
-npp.use %>% group_by(time) %>% summarise(quantile(value, .025, na.rm= T))
-npp.use %>% group_by(time) %>% summarise(quantile(value, .975, na.rm= T))
+npp.use %>% group_by(time) %>% summarise(median = median(value, na.rm= T) %>% signif(2), 
+                                         q.025 = quantile(value, .025, na.rm= T) %>% signif(2),
+                                         q.975 = quantile(value, .975, na.rm= T) %>% signif(2))
 
 # npp.use %>% group_by(time) %>% summarise(mean(value, na.rm= T))
 # npp.use %>% group_by(time) %>% summarise(sd(value, na.rm= T))

@@ -5,11 +5,11 @@ library(tictoc)
 # Load data
 df <- read_csv("builds/data.csv", col_types = cols())
 # Load FMR posterior distribution
-fmr <- read_csv("../metabolic_rate/builds/3_fmr_post.pred.csv") # kJ/day
+fmr <- read_csv("../metabolic_rate/builds/3_fmr_post.pred.csv") # log10 kJ/day
 stopifnot(all.equal(names(fmr), df$Binomial.1.2))
 
 # Load population density posterior distribution
-dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # individuals / km2
+dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # log10 individuals / km2
 stopifnot(all.equal(names(dens), df$Binomial.1.2))
 
 # Set seed to get consistent results:

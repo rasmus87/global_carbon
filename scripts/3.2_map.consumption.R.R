@@ -2,69 +2,6 @@
 
 detach(package:cowplot)
 
-### Carbon consumption map [MgC / km2 / year]
-library(rworldmap)
-library(maptools)
-base.map <- raster("builds/base_map.tif")
-newmap <- getMap(resolution = "low")
-newmap <- unionSpatialPolygons(newmap, rep(1, nrow(newmap)))
-newmap <- spTransform(newmap, crs(base.map))
-newmap <- fortify(newmap)
-
-# Load Modis data of NPP
-# Modis data are based on leaf area and solar energy input
-# It is total NPP, and before _any_ consumption 
-# (other than what has been subtracted for respiration)
-npp <- raster("../large_datasets/MOD17A3/NPP_projected_resampled_scaled_gCarbon_m2_yr.tif") # [gC / m2 / yr]
-npp.cut <- raster("data/Q95_extreme_sd_npp1.tif")
-npp[which(npp.cut[] == 1)] <- NA
-
-# Cut of low NPP based on WWF Deserts and Xeric shrub
-wwf.biome <- base.map
-wwf.biome[] <- raster("data/wwf_terr_ecos_biome_raster.tif")[]
-# WWF Biome 13: Deserts and Xeric Shrublands
-wwf.biome[] <- wwf.biome[] == 13
-plot(wwf.biome)
-npp[wwf.biome == 1] %>% summary
-
-npp200 <- base.map
-npp200[npp[] < 200] <- 1
-plot(npp200)
-
-ggplot(data.frame(x=npp[], c = wwf.biome[] == 1), aes(x, col = c)) +
-  geom_density() + 
-  geom_vline(data = NULL, xintercept = c(120, 200)) +
-  xlim(0,1000)
-ggplot(data.frame(x=npp[], c = wwf.biome[] == 1), aes(x, col = c)) + 
-  geom_density() +
-  geom_vline(data = NULL, xintercept = c(120, 200))
-
-# Cut off at median ~ 120 gC/m2/yr, or 3rd quantile "most" ~ 200 gC/m2/yr
-cut <- 200
-
-npp2 <- npp
-npp2[] <- npp[] < cut
-plot(npp2)
-
-# full = TRUE # Plot all
-full = FALSE # Plot 200 cut
-if(full) {
-  remove.areas <- NA # For full!
-} else {
-  npp[npp[] < cut] <- NA
-  remove.areas <- which(is.na(npp[]))  
-}
-
-npp[] <- npp[] * 1000^2 / 10^6 # Mg Carbon / km2 / yr
-
-###
-# Remove ranges:
-current.consumption.map[remove.areas] <- NA
-present.natural.consumption.map[remove.areas] <- NA
-###
-
-
-
 ### CACULATE TOTALT GLOBAL CONSUMPTION >>>
 # Units:  
 # [MgC / (km2 * year) * m2 * km2 / 10^6 m2 * 10^6 g / Mg * Pg / 10^15 g] = 
@@ -101,87 +38,49 @@ tot.npp
 (tot.pres.nat.hi - tot.current.hi)/tot.npp * 100
 #### CONSUMPTION OF NPP (%) |||
 
-# Consumption split by size class:
-current.consumption.200 <- current.consumption
-current.consumption.200[, remove.areas] <- 0
-all.equal(nrow(df), nrow(current.consumption.200))
-megafauna <- which(df$Mass.g >= 45000)
-current.consumption.200 <- current.consumption.200[megafauna, ]
-# Transform change from [KgC / (km2 * year)] to [MgC / (km2 * year)]
-current.consumption.200.mf.tot <- colSums(current.consumption.200) / 10^3
-tot.current.mf <- sum(current.consumption.200.mf.tot[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
-tot.current.mf
-signif(tot.current.mf/tot.current * 100, 2)
-
-signif(median(current.consumption.200.mf.tot / current.consumption.map[], na.rm = T) * 100, 2)
-
-# Consumption split by size class:
-present.natural.consumption.200 <- present.natural.consumption
-present.natural.consumption.200[, remove.areas] <- 0
-all.equal(nrow(df), nrow(present.natural.consumption.200))
-megafauna <- which(df$Mass.g >= 45000)
-present.natural.consumption.200 <- present.natural.consumption.200[megafauna, ]
-# Transform change from [KgC / (km2 * year)] to [MgC / (km2 * year)]
-present.natural.consumption.200.mf.tot <- colSums(present.natural.consumption.200) / 10^3
-tot.pres.nat.mf <- sum(present.natural.consumption.200.mf.tot[] * prod(res(current.consumption.map))/10^6, na.rm = T) * 10^6 / 10^15
-tot.pres.nat.mf
-signif(tot.pres.nat.mf/tot.pres.nat * 100, 2)
-
-signif(median(present.natural.consumption.200.mf.tot / present.natural.consumption.map[], na.rm = T) * 100, 2)
 
 
-current.consumption.map.spdf <- as(current.consumption.map, "SpatialPixelsDataFrame") # [MgC / km2 / year]
-current.consumption.map.df <- as_tibble(current.consumption.map.spdf)
-colnames(current.consumption.map.df) <- c("value", "x", "y")
-current.consumption.map.df <- current.consumption.map.df %>% mutate(time = "Current")
-present.natural.consumption.map.spdf <- as(present.natural.consumption.map, "SpatialPixelsDataFrame")
-present.natural.consumption.map.df <- as_tibble(present.natural.consumption.map.spdf)
-colnames(present.natural.consumption.map.df) <- c("value", "x", "y")
-present.natural.consumption.map.df <- present.natural.consumption.map.df %>% mutate(time = "Present natural")
-consumption.map.df <- bind_rows(current.consumption.map.df, present.natural.consumption.map.df)
-
-current.consumption.plot <- ggplot(current.consumption.map.df, aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+### Carbon consumption map [MgC / km2 / year] >>>
+current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fill = value)) +
+  facet_grid(period ~ .) +
   geom_tile() +
-  coord_equal(ylim = range(current.consumption.map.df$y)) +
+  coord_equal(ylim = range(current.consumption.df$y)) +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
                      limits = range(consumption.map.df$value)) +
   theme_map() +
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
-present.natural.consumption.plot <- ggplot(present.natural.consumption.map.df, aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x = x, y = y, fill = value)) +
+  facet_grid(period ~ .) +
   geom_tile() +
-  coord_equal(ylim = range(current.consumption.map.df$y)) +
+  coord_equal(ylim = range(current.consumption.df$y)) +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
                      limits = range(consumption.map.df$value)) +
   theme_map() +
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) + 
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
 # Change in consumption
-change <- (current.consumption.map/present.natural.consumption.map - 1)*100
-change[change > 0] <- 0
 change.spdf <- as(change, "SpatialPixelsDataFrame")
 change.df <- as_tibble(change.spdf)
 colnames(change.df) <- c("value", "x", "y")
-change.df$time <- "Difference"
+change.df$period <- "Difference"
 change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+  facet_grid(period ~ .) +
   geom_tile() +
-  coord_equal(ylim = range(current.consumption.map.df$y)) +
+  coord_equal(ylim = range(current.consumption.df$y)) +
   scale_fill_gradientn(name = Difference~('%'),
                        na.value = "white",
                        colours = plasma(10)) +
   theme_map() +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
 g11 <- ggplotGrob(current.consumption.plot)
 g12 <- ggplotGrob(present.natural.consumption.plot)
@@ -197,38 +96,10 @@ if(full) {
 
 
 
-
-
 ### Carbon consumption map (Carbon consumed / Carbon produced) [%] >>>
-# Find the fraction and correct from KgC to MgC
-npp[which(npp[] == 0)] <- NA
-current.npp.use <- (current.consumption.map)/npp * 100
-present.natural.npp.use <- (present.natural.consumption.map)/npp * 100
-current.npp.use.org <- current.npp.use
-present.natural.npp.use.org <- present.natural.npp.use
-
-# Truncate fractions above 100 %
-current.npp.use[current.npp.use >= 100.5] <- 101
-present.natural.npp.use[present.natural.npp.use >= 100.5] <- 101
-
-# Turn maps into dataframes for plotting
-current.npp.use.spdf <- as(current.npp.use, "SpatialPixelsDataFrame")
-current.npp.use.df <- as_tibble(current.npp.use.spdf)
-colnames(current.npp.use.df) <- c("value", "x", "y")
-present.natural.npp.use.spdf <- as(present.natural.npp.use, "SpatialPixelsDataFrame")
-present.natural.npp.use.df <- as_tibble(present.natural.npp.use.spdf)
-colnames(present.natural.npp.use.df) <- c("value", "x", "y")
-
-# Combine datasets
-pn.npp.use <- present.natural.npp.use.df %>% mutate(time = "Present natural")
-cu.npp.use <- current.npp.use.df %>% mutate(time = "Current")
-npp.use <- bind_rows(pn.npp.use, cu.npp.use)
-npp.use$time <- as.factor(npp.use$time)
-npp.use$time <- fct_relevel(npp.use$time, "Present natural")
-
 # Map consumption of carbon production
 frac.npp.cu.consumption.plot <- ggplot(cu.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+  facet_grid(period ~ .) +
   geom_tile() +
   coord_equal(ylim = range(cu.npp.use$y)) +
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
@@ -237,10 +108,10 @@ frac.npp.cu.consumption.plot <- ggplot(cu.npp.use %>% mutate(value = na_if(value
   theme_map() +
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
 frac.npp.pn.consumption.plot <- ggplot(pn.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+  facet_grid(period ~ .) +
   geom_tile() +
   coord_equal(ylim = range(cu.npp.use$y)) +
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
@@ -249,19 +120,15 @@ frac.npp.pn.consumption.plot <- ggplot(pn.npp.use %>% mutate(value = na_if(value
   theme_map() +
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
 # Difference in consumption
-change.pct <- current.npp.use - present.natural.npp.use
-change.pct[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct[])
-
-# change.pct[change.pct > 0] <- 0
-change.pct.spdf <- as(change.pct, "SpatialPixelsDataFrame")
+change.pct.spdf <- as(change.pct.point, "SpatialPixelsDataFrame")
 change.pct.df <- as_tibble(change.pct.spdf)
 colnames(change.pct.df) <- c("value", "x", "y")
-change.pct.df$time <- "Percentage point difference"
+change.pct.df$period <- "Percentage point difference"
 pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
-  facet_grid(time ~ .) +
+  facet_grid(period ~ .) +
   geom_tile() +
   coord_equal(ylim = range(cu.npp.use$y)) +
   scale_fill_gradientn(name = Difference~('%-point'),
@@ -270,7 +137,7 @@ pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 10
   theme_map() +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
@@ -283,10 +150,3 @@ if(full) {
   ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
 # ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||
-
-npp.use %>% group_by(time) %>% summarise(median = median(value, na.rm= T) %>% signif(2), 
-                                         q.025 = quantile(value, .025, na.rm= T) %>% signif(2),
-                                         q.975 = quantile(value, .975, na.rm= T) %>% signif(2))
-
-# npp.use %>% group_by(time) %>% summarise(mean(value, na.rm= T))
-# npp.use %>% group_by(time) %>% summarise(sd(value, na.rm= T))

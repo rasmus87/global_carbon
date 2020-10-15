@@ -117,32 +117,28 @@ eco.units %>% count(eco.unit)
 eco.units$biome <- str_replace(eco.units$biome, "Temperate Grasslands, Savannas, and Shrublands", "Temperate Grasslands to Shrublands")
 eco.units$biome <- str_replace(eco.units$biome, "Mediterranean Forests, Woodlands, and Scrub", "Mediterranean Forests to Scrub")
 
-# cols <- c("#1b9e77", "#d95f02", "#e7298a", "#66a61e", "#7570b3")
+# cols <- colorspace::qualitative_hcl(palette = "Dark 3", n = 5)
+# breaks = c("Americas", "Afrotropic", "Palearctic", "Indomalaya", "Australasia")
 # eco.units.plot <- ggplot(eco.units, aes(x = x, y = y, fill = realm)) +
 #   facet_wrap(vars(biome), nrow = 3) +
 #   geom_tile() +
 #   coord_equal(ylim = range(eco.units$y), xlim = range(eco.units$x)) +
-#   scale_fill_manual(name = "WWF Realm", na.value = "pink", values = cols) +
+#   scale_fill_manual(name = "Realm", na.value = "pink", values = cols, breaks = breaks) +
+#   # colorspace::scale_fill_discrete_qualitative(name = "WWF Realm", palette = "Dark 3", n = 5) +
 #   ggthemes::theme_map() +
 #   theme(legend.position = "bottom", legend.justification = NULL) +
-#   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+#   geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 # ggsave("./output/fig_ecoregions.png", eco.units.plot, width = 183, height = 137, units = "mm", dpi = 600)
 
 
-theme_R <- function() {
-  theme_bw() %+replace% 
-    theme(panel.border = element_blank(),
-          axis.line = element_line(colour = "black"))
-}
-
 ### Eco-unit consumption [MgC / yr /km2] ###
 eco.unit.consumption <- eco.units %>%
-  full_join(current.consumption.map.df, by = c("x", "y")) %>%
-  full_join(present.natural.consumption.map.df, by = c("x", "y")) %>%
+  full_join(current.consumption.df, by = c("x", "y")) %>%
+  full_join(present.natural.consumption.df, by = c("x", "y")) %>%
   gather(key = "period", value = "NPP.consumption", value.x, value.y) %>%
   mutate(period = fct_recode(period, "Present natural" = "value.y", "Current" = "value.x")) %>%
   mutate(period = fct_relevel(period, "Present natural")) %>% 
-  mutate(time.x = NULL, time.y = NULL)
+  mutate(period.x = NULL, period.y = NULL)
 
 # Duplicate the dataset for boxplot one for global and one for eco units
 global.consumption <- eco.unit.consumption
@@ -187,65 +183,15 @@ p4a <- ggplot(eco.unit.consumption %>% filter(!is.na(realm)), aes(realm, NPP.con
   )
 p4a
 
+
+
 ### Eco-unit consumption of NPP [%] ###
 eco.unit.npp.consumption <- eco.units %>% 
   full_join(npp.use, by = c("x", "y"))
 
-# Last of the wild:
-# Load basemap
-base.map <- raster("builds/base_map.tif")
-
-# Load and force align to basemap of LTW realms
-ltw.realm <- base.map
-ltw.realm[] <- raster("data/ltw_v2geo_realm.tif")[]
-# NAs to 0 and the rest 1
-ltw.realm[is.na(ltw.realm[])] <- 0
-ltw.realm[which(ltw.realm[] > 0)] <- 1
-
-# Load and force align to basemap of LTW biomes
-ltw.biome <- base.map
-ltw.biome[] <- raster("data/ltw_v2geo_biome.tif")[]
-# NAs to 0 and the rest 1
-ltw.biome[ltw.biome[] == 128] <- 0
-ltw.biome[which(ltw.biome[] > 0)] <- 1
-
-# Make new LTW raster based on basemap
-ltw <- base.map
-# Anywhere in either LTW biomes or realm maps
-ltw[ltw.realm[] | ltw.biome[]] <- 1
-
-ltw <- as(ltw, "SpatialPixelsDataFrame")
-ltw <- as_data_frame(ltw)
-colnames(ltw) <- c("value", "x", "y")
-
 # Merge consumption by biome
-ltw.eco.unit.consumption <- ltw[, -1] %>% 
-  left_join(eco.units, by = c("x", "y")) %>% 
-  left_join(npp.use, by = c("x", "y"))
-
-
-# Median global consumption 
-eco.unit.consumption %>% 
-  group_by(period) %>%
-  summarise(median = median(NPP.consumption, na.rm= T) %>% signif(2),
-            q.025 = quantile(NPP.consumption, .025, na.rm= T) %>% signif(2),
-            q.975 = quantile(NPP.consumption, .975, na.rm= T) %>% signif(2))
-
-# Median global NPP consumption 
-eco.unit.npp.consumption %>% 
-  group_by(time) %>%
-  summarise(median = median(value, na.rm= T) %>% signif(2),
-            q.025 = quantile(value, .025, na.rm= T) %>% signif(2),
-            q.975 = quantile(value, .975, na.rm= T) %>% signif(2))
-
-
-# Median LTW NPP consumption 
-ltw.eco.unit.consumption %>% 
-  group_by(time) %>% 
-  filter(!is.na(value)) %>% 
-  summarise(median = median(value, na.rm= T) %>% signif(2), 
-            q.025 = quantile(value, .025, na.rm= T) %>% signif(2),
-            q.975 = quantile(value, .975, na.rm= T) %>% signif(2))
+ltw.eco.unit.consumption <- ltw %>% 
+  left_join(eco.units, by = c("x", "y"))
 
 
 # Duplicate the dataset for boxplot one for global and one for eco units
@@ -256,11 +202,11 @@ global.npp.consumption$realm <- "Global"
 eco.unit.npp.consumption <- eco.unit.npp.consumption %>% filter(!is.na(realm))
 
 # Violin-plot
-p4b <- ggplot(eco.unit.npp.consumption %>% filter(!is.na(realm)), aes(realm, value, fill = time)) +
+p4b <- ggplot(eco.unit.npp.consumption %>% filter(!is.na(realm)), aes(realm, value, fill = period)) +
   facet_grid(. ~ biome, scale = "free", space = "free") +
   geom_violin(width = 0.7, scale = "width", linetype = "blank") +
   geom_boxplot(
-    aes(group = interaction(realm, time)), 
+    aes(group = interaction(realm, period)), 
     width = 0.10,
     col = "black",
     position = position_dodge(width = 0.7),
@@ -293,13 +239,13 @@ p4b <- ggplot(eco.unit.npp.consumption %>% filter(!is.na(realm)), aes(realm, val
 
 
 
-# ggplot(ltw.eco.unit.consumption, aes(x = x, y = y, fill = eco.unit)) +
-#   geom_tile() +
-#   coord_equal(ylim = range(cu.npp.use$y)) +
-#   scale_fill_viridis(name = "LTW Biome", na.value = "white", discrete = T) +
-#   theme_map() +
-#   theme(legend.position = "right") + 
-#   geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+ggplot(ltw.eco.unit.consumption, aes(x = x, y = y, fill = eco.unit)) +
+  geom_tile() +
+  coord_equal(ylim = range(cu.npp.use$y)) +
+  scale_fill_viridis(name = "LTW Biome", na.value = "white", discrete = T) +
+  theme_map() +
+  theme(legend.position = "right") +
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
 
 
 # Duplicate the dataset for boxplot one for global and one for eco units
@@ -316,14 +262,14 @@ ltw.eco.unit.consumption <- ltw.eco.unit.consumption %>%
 # Add NA's to missing categories
 ltw.eco.unit.consumption <- ltw.eco.unit.consumption %>%
   bind_rows(eco.unit.npp.consumption %>%
-              count(realm, biome, time) %>%
+              count(realm, biome, period) %>%
               .[-4])
 
-p4c <- ggplot(ltw.eco.unit.consumption, aes(realm, value, fill = time)) +
+p4c <- ggplot(ltw.eco.unit.consumption, aes(realm, value, fill = period)) +
   facet_grid(. ~ biome, scale = "free", space = "free") +
   geom_violin(width = 0.7, scale = "width", linetype = "blank") +
   geom_boxplot(
-    aes(group = interaction(realm, time)), 
+    aes(group = interaction(realm, period)), 
     width = 0.10,
     col = "black",
     position = position_dodge(width = 0.7),
@@ -353,7 +299,6 @@ p4c <- ggplot(ltw.eco.unit.consumption, aes(realm, value, fill = time)) +
   )
 p4c
 
-library(cowplot)
 p <- plot_grid(p4a, p4b, p4c, nrow = 3)
 
 if(full) {
@@ -364,8 +309,7 @@ if(full) {
 
 
 
-# Global plots
-
+### Global plots
 p3a <- ggplot(global.consumption, aes(period, NPP.consumption, fill = period)) +
   geom_violin(width = 0.7, scale = "width", linetype = "blank") +
   geom_boxplot(
@@ -397,10 +341,10 @@ p3a <- ggplot(global.consumption, aes(period, NPP.consumption, fill = period)) +
     panel.grid.major = element_blank()
   )
 
-p3b <- ggplot(global.npp.consumption %>% filter(!is.na(time)), aes(time, value, fill = time)) +
+p3b <- ggplot(global.npp.consumption %>% filter(!is.na(period)), aes(period, value, fill = period)) +
   geom_violin(width = 0.7, scale = "width", linetype = "blank") +
   geom_boxplot(
-    aes(group = interaction(realm, time)), 
+    aes(group = interaction(realm, period)), 
     width = 0.10,
     col = "black",
     position = position_dodge(width = 0.7),
@@ -428,10 +372,10 @@ p3b <- ggplot(global.npp.consumption %>% filter(!is.na(time)), aes(time, value, 
     panel.grid.major = element_blank()
   )
 
-p3c <- ggplot(global.ltw.consumption, aes(time, value, fill = time)) +
+p3c <- ggplot(global.ltw.consumption, aes(period, value, fill = period)) +
   geom_violin(width = 0.7, scale = "width", linetype = "blank") +
   geom_boxplot(
-    aes(group = interaction(realm, time)), 
+    aes(group = interaction(realm, period)), 
     width = 0.10,
     col = "black",
     position = position_dodge(width = 0.7),

@@ -6,8 +6,8 @@ library(ggthemes)
 library(cowplot)
 
 
-load("builds/current.maps.filtered.edge.lim.RData")
-load("builds/present.natural.maps.filtered.edge.lim.RData")
+current.maps <- readRDS("builds/current.maps.filtered.edge.lim.rds")
+present.natural.maps <- readRDS("builds/present.natural.maps.filtered.edge.lim.rds")
 
 df <- read_csv("builds/data.csv", col_types = cols())
 
@@ -16,11 +16,11 @@ density <- 10^df$log10density # km^-2
 
 mammal.biomass.area <- density * mass.Pg * 10^15 / 1000 # Kg / km2
 
-cu.mass <- current.maps.edge.lim * mammal.biomass.area
+cu.mass <- current.maps * mammal.biomass.area
 cu.mass <- colSums(cu.mass)
 cu.mass[remove.areas] <- NA
 
-pn.mass <- present.natural.maps.edge.lim * mammal.biomass.area
+pn.mass <- present.natural.maps * mammal.biomass.area
 pn.mass <- colSums(pn.mass)
 pn.mass[remove.areas] <- NA
 
@@ -102,3 +102,68 @@ plot_grid(p1a, p2a, p1b, p2b, ncol = 2)
 p <- plot_grid(p1a, p1b, p2a, p2b, nrow = 4)
 p
 ggsave("./output/figS7_GlobalBiomass.png", p, width = 20, height = 25, units = "cm")
+
+
+
+
+y.range <- mass %>% filter(!is.na(value)) %>% pull(y) %>% range
+
+### Carbon mass map [Kg / km2] >>>
+p1a <- ggplot(mass %>% filter(time == "Current"), aes(x = x, y = y, fill = value)) +
+  facet_grid(time ~ .) +
+  geom_tile() +
+  coord_equal(ylim = y.range) +
+  scale_fill_viridis(name = Mass~(Kg/km^2),
+                     na.value = "white",
+                     limits = range(mass$value, na.rm = TRUE)) +
+  theme_map() +
+  labs(subtitle = "A") +
+  theme(plot.subtitle = element_text(face = "bold")) +
+  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+
+p2a <- ggplot(mass %>% filter(time == "Present-natural"), aes(x = x, y = y, fill = value)) +
+  facet_grid(time ~ .) +
+  geom_tile() +
+  coord_equal(ylim = y.range) +
+  scale_fill_viridis(name = Mass~(Kg/km^2),
+                     na.value = "white",
+                     limits = range(mass$value, na.rm = TRUE)) +
+  theme_map() +
+  labs(subtitle = "B") +
+  theme(plot.subtitle = element_text(face = "bold")) +
+  geom_polygon(data = newmap, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+
+# Change in consumption
+# Calculate change between CU and PN
+change <- (cu.mass.map/pn.mass.map - 1) * 100
+# Truncate positive change
+change[change > 0] <- 0
+# change[change < 0] <- NA # Check these are not mistakes in phylacine???
+
+change.spdf <- as(change, "SpatialPixelsDataFrame")
+change.df <- as_tibble(change.spdf)
+colnames(change.df) <- c("value", "x", "y")
+change.df$time <- "Difference"
+change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
+  facet_grid(time ~ .) +
+  geom_tile() +
+  coord_equal(ylim = y.range) +
+  scale_fill_gradientn(name = Difference~('%'),
+                       na.value = "white",
+                       colours = plasma(10)) +
+  theme_map() +
+  labs(subtitle = "C") +
+  theme(plot.subtitle = element_text(face = "bold")) +
+  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+
+g11 <- ggplotGrob(p1a)
+g12 <- ggplotGrob(p2a)
+g13 <- ggplotGrob(change.plot)
+p1 <- gtable_rbind(g11, g12, g13)
+arrangeGrob(p1) %>% plot
+if(full) {
+  ggsave("./output/figS7_GlobalBiomass_full.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+} else {
+  ggsave("./output/figS7_GlobalBiomass_200.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+}
+### Carbon mass map [Kg / km2] |||

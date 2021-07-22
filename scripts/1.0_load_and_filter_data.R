@@ -7,7 +7,7 @@ library(stringr)
 
 
 
-# Load PHYLACINE trait data and remove all non terrestrial speci ----------
+# Load PHYLACINE trait data and remove all non terrestrial species ----------
 
 # Load PHYLACINE 1.2.1
 df <- read_csv("../PHYLACINE_1.2/Data/Traits/Trait_data.csv", col_types = cols())

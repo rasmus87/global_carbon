@@ -1,14 +1,14 @@
 # Load libs for section 3.x
 library(tidyverse)
 library(tictoc)
-library(data.table)
-library(raster)
-library(viridis)  # better colors for everyone
-library(cowplot) # Load cowplot (has to be loaded before ggthemes!)
-library(ggthemes)
-library(gridExtra)
-library(rworldmap) # For a worldmap shape overlay
-library(maptools) # unionSpatialPolygons()
+# library(data.table)
+# library(raster)
+# library(viridis)  # better colors for everyone
+# library(cowplot) # Load cowplot (has to be loaded before ggthemes!)
+# library(ggthemes)
+# library(gridExtra)
+# library(rworldmap) # For a worldmap shape overlay
+# library(maptools) # unionSpatialPolygons()
 
 
 # Load data
@@ -26,21 +26,6 @@ consumption.summary <- consumption.samples %>%
             ci.hi = apply(.[, -1], 1, quantile, probs = .975))
 # Alignment sanity check 
 stopifnot(all(consumption.summary$Binomial.1.2 == df$Binomial.1.2))
-
-# # Load mean models
-# consumption.corrected <- read_csv("builds/species.consumption.kgC.yr.km2.csv", col_types = cols()) # [kgC / (km2 * year)]
-# consumption.naive <- read_csv("builds/species.consumption.kgC.yr.km2.naive.csv", col_types = cols()) # [kgC / (km2 * year)]
-# 
-# # Check consumption models against each other
-# ggplot(tibble(), aes(x = log10(Q))) +
-#   geom_density(data = consumption.naive, col = "yellow") +
-#   geom_density(data = consumption.corrected, col = "magenta") +
-#   geom_density(data = consumption.summary, aes(x = log10(mean)), col = "red") +
-#   geom_density(data = consumption.summary, aes(x = log10(median)), col = "darkgreen") +
-#   geom_density(data = consumption.summary, aes(x = log10(ci.lw)), col = "darkgreen", lty = 2) +
-#   geom_density(data = consumption.summary, aes(x = log10(ci.hi)), col = "darkgreen", lty = 2) +
-#   theme_bw()
-# # We will use medians!
 
 # Estimate this in terms of plant consumtion
 consumption <- consumption.summary %>% mutate(Q.plant = median * df$Diet.Plant/100,

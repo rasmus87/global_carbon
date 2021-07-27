@@ -1,3 +1,8 @@
+# Calculate global mammal biomass
+# Can be run seperately from other 3.x
+# 27/07-2021 Rasmus Ø Pedersen
+
+# Load libraries
 library(tidyverse)
 library(tictoc)
 
@@ -9,8 +14,6 @@ df <- read_csv("builds/data.csv", col_types = cols())
 
 # We sample the distributions instead
 n.samples <- 1000
-timestamp()
-tic()
 # ... and density distributions
 dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # individuals / km2
 all.equal(names(dens), df$Binomial.1.2)
@@ -19,7 +22,6 @@ log10dens.samples <- t(sample_n(dens, n.samples))
 dens.alt <- read_csv("../mammal_density/builds/3_densities_post.pred.alt.csv") # individuals / km2
 all.equal(names(dens), df$Binomial.1.2)
 log10dens.samples.alt <- t(sample_n(dens.alt, n.samples))
-toc()
 
 
 # Global mammal biosmass in Carbon >>>

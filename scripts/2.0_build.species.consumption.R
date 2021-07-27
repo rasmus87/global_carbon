@@ -1,16 +1,38 @@
-# Load libs
+# Estimate consumption per species
+# 27/07-2021 Rasmus Ø Pedersen
+
+# Load libraries
 library(tidyverse)
 library(tictoc)
 
-# Load data
+
+
+# Load data ---------------------------------------------------------------
+
+# Load traits data
 df <- read_csv("builds/data.csv", col_types = cols())
+
 # Load FMR posterior distribution
 fmr <- read_csv("../metabolic_rate/builds/3_fmr_post.pred.csv") # log10 kJ/day
+# Make sure all species are there
+all(df$Binomial.1.2 %in% names(fmr))
+# Subset
+fmr <- fmr[df$Binomial.1.2]
+# Make sure alignment is right
 stopifnot(all.equal(names(fmr), df$Binomial.1.2))
 
 # Load population density posterior distribution
 dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # log10 individuals / km2
+# Make sure all species are there
+all(df$Binomial.1.2 %in% names(dens))
+# Subset
+dens <- dens[df$Binomial.1.2]
+# Make sure alignment is right
 stopifnot(all.equal(names(dens), df$Binomial.1.2))
+
+
+
+# Sample FMR and density distributions ------------------------------------
 
 # Set seed to get consistent results:
 set.seed(42)
@@ -20,6 +42,10 @@ n.samples <- 1000
 log10fmr.samples <- t(sample_n(fmr, n.samples))
 log10dens.samples <- t(sample_n(dens, n.samples))
 
+
+
+
+# Translate FMR to carbon consumption per species -----------------------------
 
 ## Metabolizable energy in plant dry matter:
 # Degen, A. A., Benjamin, R. W., Abdraimov, S. A., & Sarbasov, T. I. (2002).
@@ -60,6 +86,10 @@ colnames(Q.samples) <- paste0("Q.sample.", 1:n.samples)
 consumption.samples <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(Q.samples))
 write_csv(consumption.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
 
+
+
+
+# Translate FMR to carbon consumption per species using means only --------
 
 # Species biomass consumption pr km2
 # When data stems from a log-log model we need to correct else we will get

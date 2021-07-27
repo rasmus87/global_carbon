@@ -1,8 +1,12 @@
-# Load libs for section 3.x
+# Load data and packages used in models and graphing
+# 27/07-2021 Rasmus Ø Pedersen
+
+# Load libraries
 library(tidyverse)
 library(tictoc)
+library(Matrix)
+library(raster)
 # library(data.table)
-# library(raster)
 # library(viridis)  # better colors for everyone
 # library(cowplot) # Load cowplot (has to be loaded before ggthemes!)
 # library(ggthemes)
@@ -11,7 +15,10 @@ library(tictoc)
 # library(maptools) # unionSpatialPolygons()
 
 
-# Load data
+
+# Load data ---------------------------------------------------------------
+
+# Load traits
 df <- read_csv("builds/data.csv", col_types = cols())
 
 # Load consumption data
@@ -28,27 +35,26 @@ consumption.summary <- consumption.samples %>%
 stopifnot(all(consumption.summary$Binomial.1.2 == df$Binomial.1.2))
 
 # Estimate this in terms of plant consumtion
-consumption <- consumption.summary %>% mutate(Q.plant = median * df$Diet.Plant/100,
-                                              ci.lw.plant = ci.lw * df$Diet.Plant/100,
-                                              ci.hi.plant = ci.hi * df$Diet.Plant/100)
+consumption <- consumption.summary %>% 
+  mutate(Q.plant = median * df$Diet.Plant/100,
+         ci.lw.plant = ci.lw * df$Diet.Plant/100,
+         ci.hi.plant = ci.hi * df$Diet.Plant/100)
 
 
-# Load map data and builds consumption maps
-#load("builds/current.maps.filtered.RData")
-current.maps <- readRDS("builds/current.maps.filtered.edge.lim.rds")
+# Load species maps and calculate consumption maps
+# Current maps
+current.maps <- read_rds("builds/current.maps.filtered.edge.lim.rds")
 current.consumption <- current.maps * consumption$Q.plant
 current.consumption.lw <- current.maps * consumption$ci.lw.plant
 current.consumption.hi <- current.maps * consumption$ci.hi.plant
-rm(current.maps) # Each loaded matrix is 1.9 GB ram
-gc() # R forgets to clean up
 
-present.natural.maps <- readRDS("builds/present.natural.maps.filtered.edge.lim.rds")
+# Present natural maps
+present.natural.maps <- read_rds("builds/present.natural.maps.filtered.edge.lim.rds")
 present.natural.consumption <- present.natural.maps * consumption$Q.plant
 present.natural.consumption.lw <- present.natural.maps * consumption$ci.lw.plant
 present.natural.consumption.hi <- present.natural.maps * consumption$ci.hi.plant
-rm(present.natural.maps) # Each loaded matrix is 1.9 GB ram
-gc() # R forgets to clean up
 
+# Base map
 base.map <- raster("builds/base_map.tif")
 
 current.consumption.map <- base.map
@@ -60,7 +66,6 @@ present.natural.consumption.map.hi <- base.map
 
 # Summarize consumption per grid-cell
 # Transform change from [KgC / (km2 * year)] to [MgC / (km2 * year)]
-tic()
 current.consumption.map[] <- colSums(current.consumption) / 10^3
 current.consumption.map[current.consumption.map == 0] <- NA
 
@@ -74,11 +79,7 @@ current.consumption.map.lw[current.consumption.map.lw == 0] <- NA
 current.consumption.map.hi[] <- colSums(current.consumption.hi) / 10^3
 current.consumption.map.hi[current.consumption.map.hi == 0] <- NA
 
-rm(current.consumption.lw)
-rm(current.consumption.hi)
-toc()
 
-tic()
 present.natural.consumption.map[] <- colSums(present.natural.consumption) / 10^3
 present.natural.consumption.map[present.natural.consumption.map == 0] <- NA
 
@@ -92,16 +93,7 @@ present.natural.consumption.map.lw[present.natural.consumption.map.lw == 0] <- N
 present.natural.consumption.map.hi[] <- colSums(present.natural.consumption.hi) / 10^3
 present.natural.consumption.map.hi[present.natural.consumption.map.hi == 0] <- NA
 
-rm(present.natural.consumption.lw)
-rm(present.natural.consumption.hi)
-toc()
-
-gc()
-
-
-## Load basemap
-base.map <- raster("builds/base_map.tif")
-## Load world shape overlay
+# Load world shape overlay
 world.map <- getMap(resolution = "low")
 world.map <- unionSpatialPolygons(world.map, rep(1, nrow(world.map)))
 world.map <- spTransform(world.map, crs(base.map))

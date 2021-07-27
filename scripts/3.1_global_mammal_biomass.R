@@ -1,30 +1,43 @@
 # Calculate global mammal biomass
-# Can be run seperately from other 3.x
+# Does not need to be run for 3.2+
 # 27/07-2021 Rasmus Ø Pedersen
 
-# Load libraries
-library(tidyverse)
-library(tictoc)
+
+
+# Load and sample density data --------------------------------------------
 
 # Set seed to get consistent results:
 set.seed(42)
 
-# Load data
-df <- read_csv("builds/data.csv", col_types = cols())
-
-# We sample the distributions instead
+# Set samples
 n.samples <- 1000
-# ... and density distributions
-dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # individuals / km2
-all.equal(names(dens), df$Binomial.1.2)
+
+# Load population density posterior distribution
+dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # log10 individuals / km2
+# Make sure all species are there
+all(df$Binomial.1.2 %in% names(dens))
+# Subset
+dens <- dens[df$Binomial.1.2]
+# Make sure alignment is right
+stopifnot(all.equal(names(dens), df$Binomial.1.2))
+# Sample
 log10dens.samples <- t(sample_n(dens, n.samples))
 
-dens.alt <- read_csv("../mammal_density/builds/3_densities_post.pred.alt.csv") # individuals / km2
-all.equal(names(dens), df$Binomial.1.2)
+# Load alternative population density posterior distribution
+dens.alt <- read_csv("../mammal_density/builds/3_densities_post.pred.alt.csv") # log10 individuals / km2
+# Make sure all species are there
+all(df$Binomial.1.2 %in% names(dens.alt))
+# Subset
+dens.alt <- dens.alt[df$Binomial.1.2]
+# Make sure alignment is right
+stopifnot(all.equal(names(dens.alt), df$Binomial.1.2))
+# Sample
 log10dens.samples.alt <- t(sample_n(dens.alt, n.samples))
 
 
-# Global mammal biosmass in Carbon >>>
+
+# Global mammal biomass in Carbon -----------------------------------------
+
 # For comparison with:
 # Bar-On, Y. M., Phillips, R., & Milo, R. (2018). The biomass distribution on
 # Earth. Proceedings of the National Academy of Sciences of the United States of
@@ -33,17 +46,13 @@ log10dens.samples.alt <- t(sample_n(dens.alt, n.samples))
 # so kgC = 0.3 * 0.5 kg wet weight = 0.15 * kg wet weight in total
 # [Pg] = [GtC] = 0.15 * BM
 
-library(raster)
-current.maps.edge.lim <- readRDS("builds/current.maps.filtered.edge.lim.RData")
-present.natural.maps.edge.lim <- readRDS("builds/present.natural.maps.filtered.edge.lim.RData")
+# Remove cells as selected in 3.0
+current.maps <- current.maps[, -remove.areas]
+present.natural.maps <- present.natural.maps[, -remove.areas]
 
-# REMOVE CELLS AS FROM 3.2:
-current.maps.edge.lim[, remove.areas] <- NA
-present.natural.maps.edge.lim[, remove.areas] <- NA
-### END REMOVE CELLS
 
-n.cells.cu <- rowSums(current.maps.edge.lim[], na.rm = TRUE)
-n.cells.pn <- rowSums(present.natural.maps.edge.lim[], na.rm = TRUE)
+n.cells.cu <- rowSums(current.maps[], na.rm = TRUE)
+n.cells.pn <- rowSums(present.natural.maps[], na.rm = TRUE)
 base.map <- raster("builds/base_map.tif")
 # dens [1/km2] * mass [g] * 10^-15 Pg/g * cell-resolution [m^2] * 10^-6 (km/m)^2
 # Pg
@@ -125,4 +134,3 @@ write_excel_csv(tab, "output/Proboscidea_density.csv")
 # The paper says:
 # Current: 0.003 Pg (livestock = 0.1)
 # Present natural: 0.02 Pg
-# Global mammal biosmass in Carbon |||

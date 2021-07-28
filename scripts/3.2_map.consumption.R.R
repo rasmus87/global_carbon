@@ -18,7 +18,7 @@ current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fil
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(consumption.df$y))
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
@@ -31,7 +31,7 @@ present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(consumption.df$y))
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 # Change in consumption
 change.spdf <- as(change, "SpatialPixelsDataFrame")
@@ -49,7 +49,7 @@ change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(consumption.df$y))
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 g11 <- ggplotGrob(current.consumption.plot)
 g12 <- ggplotGrob(present.natural.consumption.plot)
@@ -77,7 +77,7 @@ frac.npp.cu.consumption.plot <- ggplot(current.npp.use.df %>% mutate(value = na_
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(npp.use$y))
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
@@ -90,7 +90,7 @@ frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(val
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(npp.use$y))
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 # Difference in consumption
 change.pct.spdf <- as(change.pct.point, "SpatialPixelsDataFrame")
@@ -108,7 +108,7 @@ pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 10
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(npp.use$y))
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)

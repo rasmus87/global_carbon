@@ -2,10 +2,6 @@
 # Run after 3.0_load.data.R
 # 27/07-2021 Rasmus Ø Pedersen
 
-# Load libraries
-library(viridis)  # better colors for everyone
-library(gridExtra)
-
 # Total carbon consumption map [MgC / km2 / year] -----------------------------------
 current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
@@ -14,7 +10,7 @@ current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fil
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
                      limits = range(consumption.df$value)) +
-  ggthemes::theme_map() +
+  theme_map() +
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
@@ -27,7 +23,7 @@ present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
                      limits = range(consumption.df$value)) +
-  ggthemes::theme_map() +
+  theme_map() +
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
@@ -45,7 +41,7 @@ change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
   scale_fill_gradientn(name = Difference~('%'),
                        na.value = "white",
                        colours = plasma(10)) +
-  ggthemes::theme_map() +
+  theme_map() +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
@@ -73,7 +69,7 @@ frac.npp.cu.consumption.plot <- ggplot(current.npp.use.df %>% mutate(value = na_
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
                      na.value = "hotpink",
                      limits = range(npp.use$value[npp.use$value != 101])) +
-  ggthemes::theme_map() +
+  theme_map() +
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
@@ -86,7 +82,7 @@ frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(val
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
                      na.value = "hotpink",
                      limits = range(npp.use$value[npp.use$value != 101])) +
-  ggthemes::theme_map() +
+  theme_map() +
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
@@ -104,7 +100,7 @@ pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 10
   scale_fill_gradientn(name = Difference~('%-point'),
                        na.value = "hotpink",
                        colours = plasma(10)) +
-  ggthemes::theme_map() +
+  theme_map() +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +

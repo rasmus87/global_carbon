@@ -181,8 +181,8 @@ ggplot(tibble(NPP = npp[], Desert = wwf.biome[] == 1), aes(NPP, col = Desert)) +
 plot(npp < cut)
 
 ###### Cut or not ######
-full = TRUE # Plot all
-# full = FALSE # Plot 200 cut
+# full = TRUE # Plot all
+full = FALSE # Plot 200 cut
 if(full) {
   remove.areas <- NA # For full!
   # Still change NPP cells with 0 to NA

@@ -9,12 +9,8 @@ library(raster)
 library(sf)
 library(rnaturalearth)
 # library(data.table)
-# library(viridis)  # better colors for everyone
 # library(cowplot) # Load cowplot (has to be loaded before ggthemes!)
 # library(ggthemes)
-# library(gridExtra)
-# library(rworldmap) # For a worldmap shape overlay
-# library(maptools) # unionSpatialPolygons()
 
 
 
@@ -62,6 +58,12 @@ present.natural.consumption.hi <- present.natural.maps * consumption$ci.hi.plant
 # Base map
 base.map <- raster("builds/base_map.tif")
 
+# New land map
+land <- raster("builds/land.tif")
+land.df <- as(land, "SpatialPixelsDataFrame") # [MgC / km2 / year]
+land.df <- as_tibble(land.df)
+land.df$land <- NA
+
 # Set up maps to use
 current.consumption.map <- base.map
 present.natural.consumption.map <- base.map
@@ -78,42 +80,58 @@ present.natural.consumption.map.hi <- base.map
 
 # Current maps
 current.consumption.map[] <- colSums(current.consumption) / 10^3
-current.consumption.map[current.consumption.map == 0] <- NA
+# Remove oceans
+current.consumption.map <- current.consumption.map * land
+# current.consumption.map[current.consumption.map == 0] <- NA
 
 # Current maps CI
 current.consumption.map.lw[] <- colSums(current.consumption.lw) / 10^3
-current.consumption.map.lw[current.consumption.map.lw == 0] <- NA
+# Remove oceans
+current.consumption.map.lw <- current.consumption.map.lw * land
+# current.consumption.map.lw[current.consumption.map.lw == 0] <- NA
 current.consumption.map.hi[] <- colSums(current.consumption.hi) / 10^3
-current.consumption.map.hi[current.consumption.map.hi == 0] <- NA
+# Remove oceans
+current.consumption.map.hi <- current.consumption.map.hi * land
+# current.consumption.map.hi[current.consumption.map.hi == 0] <- NA
 
 # Current megafauna maps
 megafauna <- which(df$Mass.g >= 45000)
 current.megafauna.consumption.map <- base.map
 current.megafauna.consumption.map[] <- colSums(current.consumption[megafauna, ]) / 10^3
-current.megafauna.consumption.map[current.megafauna.consumption.map == 0] <- NA
+# Remove oceans
+current.megafauna.consumption.map <- current.megafauna.consumption.map * land
+# current.megafauna.consumption.map[current.megafauna.consumption.map == 0] <- NA
 
 
 # Present natural maps
 present.natural.consumption.map[] <- colSums(present.natural.consumption) / 10^3
-present.natural.consumption.map[present.natural.consumption.map == 0] <- NA
+# Remove oceans
+present.natural.consumption.map <- present.natural.consumption.map * land
+# present.natural.consumption.map[present.natural.consumption.map == 0] <- NA
 
 # Present natural maps CI
 present.natural.consumption.map.lw[] <- colSums(present.natural.consumption.lw) / 10^3
-present.natural.consumption.map.lw[present.natural.consumption.map.lw == 0] <- NA
+# Remove oceans
+present.natural.consumption.map.lw <- present.natural.consumption.map.lw * land
+# present.natural.consumption.map.lw[present.natural.consumption.map.lw == 0] <- NA
 present.natural.consumption.map.hi[] <- colSums(present.natural.consumption.hi) / 10^3
-present.natural.consumption.map.hi[present.natural.consumption.map.hi == 0] <- NA
+# Remove oceans
+present.natural.consumption.map.hi <- present.natural.consumption.map.hi * land
+# present.natural.consumption.map.hi[present.natural.consumption.map.hi == 0] <- NA
 
 # Present natural megafauna maps
 present.natural.megafauna.consumption.map <- base.map
 present.natural.megafauna.consumption.map[] <- colSums(present.natural.consumption[megafauna, ]) / 10^3
-present.natural.megafauna.consumption.map[present.natural.megafauna.consumption.map == 0] <- NA
+# Remove oceans
+present.natural.megafauna.consumption.map <- present.natural.megafauna.consumption.map * land
+# present.natural.megafauna.consumption.map[present.natural.megafauna.consumption.map == 0] <- NA
 
 
 
 # Load world map overlay and set up plotting theme ------------------------
 
 # Load world shape overlay
-world.map <- ne_countries(returnclass = "sf") %>% 
+world.map <- ne_countries(scale = 110, returnclass = "sf") %>% 
   st_transform(st_crs(base.map)) %>% 
   st_union()
 
@@ -191,6 +209,7 @@ present.natural.megafauna.consumption.map[remove.areas] <- NA
 change <- (current.consumption.map/present.natural.consumption.map - 1) * 100
 # Truncate positive change
 change[change > 0] <- 0
+change[present.natural.consumption.map == 0] <- 0
 
 # NPP consumption (Carbon consumed / Carbon produced) [%]
 # Find the fraction
@@ -368,7 +387,7 @@ megafauna.drop <- diff(megafauna.npp.use.summary$mean)
 signif(megafauna.drop/overall.drop * 100, 2)
 
 # Summarise NPP use (LTW) [%]
-ltw %>% 
+(ltw.use <- ltw %>% 
   group_by(period) %>% 
   filter(!is.na(value)) %>%
   summarise(mean = mean(value, na.rm = T) %>% signif(2),
@@ -376,7 +395,8 @@ ltw %>%
             median = median(value, na.rm= T) %>% signif(2),
             q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
             q.975 = quantile(value, .975, na.rm = T) %>% signif(2),
-            n = n())
+            n = n()))
+diff(ltw.use$median)/ltw.use$median[1]			
 
 # Summarise carbon consumption (all) [MgC / km2 / year]
 consumption.df %>% 

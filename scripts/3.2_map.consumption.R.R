@@ -1,29 +1,37 @@
+# Map consumption
 # Run after 3.0_load.data.R
+# 27/07-2021 Rasmus Ø Pedersen
 
-### Carbon consumption map [MgC / km2 / year] >>>
+# Load libraries
+library(viridis)  # better colors for everyone
+library(gridExtra)
+
+# Total carbon consumption map [MgC / km2 / year] -----------------------------------
 current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  coord_equal(ylim = range(current.consumption.df$y)) +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
-                     limits = range(consumption.map.df$value)) +
-  theme_map() +
+                     limits = range(consumption.df$value)) +
+  ggthemes::theme_map() +
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(consumption.df$y))
 
 present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  coord_equal(ylim = range(current.consumption.df$y)) +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
-                     limits = range(consumption.map.df$value)) +
-  theme_map() +
+                     limits = range(consumption.df$value)) +
+  ggthemes::theme_map() +
   labs(subtitle = "b") +
-  theme(plot.subtitle = element_text(face = "bold")) + 
-  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  theme(plot.subtitle = element_text(face = "bold")) +
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(consumption.df$y))
 
 # Change in consumption
 change.spdf <- as(change, "SpatialPixelsDataFrame")
@@ -32,15 +40,16 @@ colnames(change.df) <- c("value", "x", "y")
 change.df$period <- "Difference"
 change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  coord_equal(ylim = range(current.consumption.df$y)) +
   scale_fill_gradientn(name = Difference~('%'),
                        na.value = "white",
                        colours = plasma(10)) +
-  theme_map() +
+  ggthemes::theme_map() +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(consumption.df$y))
 
 g11 <- ggplotGrob(current.consumption.plot)
 g12 <- ggplotGrob(present.natural.consumption.plot)
@@ -52,35 +61,36 @@ if(full) {
 } else {
   ggsave("./output/fig1_carbon_consumption200.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
-### Carbon consumption map [MgC / km2 / year] |||
 
 
 
-### Carbon consumption map (Carbon consumed / Carbon produced) [%] >>>
-# Map consumption of carbon production
-frac.npp.cu.consumption.plot <- ggplot(cu.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
+
+# Fraction carbon consumption map (Carbon consumed / Carbon produced) [%] ----------
+frac.npp.cu.consumption.plot <- ggplot(current.npp.use.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  coord_equal(ylim = range(cu.npp.use$y)) +
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
                      na.value = "hotpink",
                      limits = range(npp.use$value[npp.use$value != 101])) +
-  theme_map() +
+  ggthemes::theme_map() +
   labs(subtitle = "a") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(npp.use$y))
 
-frac.npp.pn.consumption.plot <- ggplot(pn.npp.use %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
+frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  coord_equal(ylim = range(cu.npp.use$y)) +
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
                      na.value = "hotpink",
                      limits = range(npp.use$value[npp.use$value != 101])) +
-  theme_map() +
+  ggthemes::theme_map() +
   labs(subtitle = "b") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(npp.use$y))
 
 # Difference in consumption
 change.pct.spdf <- as(change.pct.point, "SpatialPixelsDataFrame")
@@ -89,15 +99,16 @@ colnames(change.pct.df) <- c("value", "x", "y")
 change.pct.df$period <- "Percentage point difference"
 pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  coord_equal(ylim = range(cu.npp.use$y)) +
   scale_fill_gradientn(name = Difference~('%-point'),
                        na.value = "hotpink",
                        colours = plasma(10)) +
-  theme_map() +
+  ggthemes::theme_map() +
   labs(subtitle = "c") +
   theme(plot.subtitle = element_text(face = "bold")) +
-  geom_polygon(data = world.map, aes(x = long, y = lat, group = group), inherit.aes = F, col = "black", fill = "NA", lwd = .25)
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(npp.use$y))
 
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
@@ -109,4 +120,4 @@ if(full) {
 } else {
   ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
-# ### Carbon consumption map (Carbon consumed / Carbon produced) [%] |||
+

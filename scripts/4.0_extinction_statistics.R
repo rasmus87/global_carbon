@@ -1,4 +1,5 @@
 # Minor script to find PHYLACINE megafauna facts
+# Can be run as a separate section
 # 29/07-2021 Rasmus Ø Pedersen
 
 # Load libraries

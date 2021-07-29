@@ -31,20 +31,26 @@ signif(diff(npp.use.summary[[4]])/npp.use.summary[[4]][2] * 100, 2)
 
 # Megafauna NPP use compared to all fauna:
 # Current
-# all
-npp.use.summary$mean[1]
-# percentage used by megafauna
-signif(megafauna.npp.use.summary$mean[1]/npp.use.summary$mean[1] * 100, 2)
+paste0("In the current all fauna uses ", 
+       npp.use.summary$mean[1], 
+       "% of NPP, and megafauna constitutes of that ",
+       signif(megafauna.npp.use.summary$mean[1]/npp.use.summary$mean[1] * 100, 2),
+       "%.")
 # Present natural
-# all
-npp.use.summary$mean[2]
-# percentage used by megafauna
-signif(megafauna.npp.use.summary$mean[2]/npp.use.summary$mean[2] * 100, 2)
+paste0("In the present natural All fauna uses ", 
+       npp.use.summary$mean[2], 
+       "% of NPP, and megafauna constitutes of that ",
+       signif(megafauna.npp.use.summary$mean[2]/npp.use.summary$mean[2] * 100, 2),
+       "%.")
 
 # Magafauna NPP use drop [%]:
-overall.drop <- diff(npp.use.summary$mean)
-megafauna.drop <- diff(megafauna.npp.use.summary$mean)
-signif(megafauna.drop/overall.drop * 100, 2)
+paste0("There has been an overall drop in NPP consumption of ", 
+       overall.drop <- diff(npp.use.summary$mean), 
+       "%-point, and within just the megafauna the drop is ",
+       megafauna.drop <- diff(megafauna.npp.use.summary$mean),
+       "%-point, which means that of the overall decrease in consumption, megafauna constitues ",
+       signif(megafauna.drop/overall.drop * 100, 2),
+       "% of that.")
 
 # Summarise NPP use (LTW) [%]
 (ltw.use <- ltw %>% 
@@ -105,3 +111,4 @@ tot.npp
 (tot.pres.nat - tot.current)/tot.npp * 100
 (tot.pres.nat.lw - tot.current.lw)/tot.npp * 100
 (tot.pres.nat.hi - tot.current.hi)/tot.npp * 100
+

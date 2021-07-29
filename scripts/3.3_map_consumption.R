@@ -1,8 +1,9 @@
 # Map consumption
 # Run after 3.0_load.data.R
-# 27/07-2021 Rasmus Ø Pedersen
+# 29/07-2021 Rasmus Ø Pedersen
 
 # Total carbon consumption map [MgC / km2 / year] -----------------------------------
+# Current
 current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
@@ -16,6 +17,7 @@ current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fil
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
+# Present natural
 present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
@@ -30,10 +32,6 @@ present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 # Change in consumption
-change.spdf <- as(change, "SpatialPixelsDataFrame")
-change.df <- as_tibble(change.spdf)
-colnames(change.df) <- c("value", "x", "y")
-change.df$period <- "Difference"
 change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
@@ -62,6 +60,7 @@ if(full) {
 
 
 # Fraction carbon consumption map (Carbon consumed / Carbon produced) [%] ----------
+# Current
 frac.npp.cu.consumption.plot <- ggplot(current.npp.use.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
@@ -75,6 +74,7 @@ frac.npp.cu.consumption.plot <- ggplot(current.npp.use.df %>% mutate(value = na_
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
+# Present natural
 frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
@@ -89,10 +89,6 @@ frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(val
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
 # Difference in consumption
-change.pct.spdf <- as(change.pct.point, "SpatialPixelsDataFrame")
-change.pct.df <- as_tibble(change.pct.spdf)
-colnames(change.pct.df) <- c("value", "x", "y")
-change.pct.df$period <- "Percentage point difference"
 pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   facet_grid(period ~ .) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +

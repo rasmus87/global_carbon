@@ -257,6 +257,16 @@ consumption.df <- bind_rows(current.consumption.df,
                             present.natural.consumption.df)
 
 
+# Percentage difference
+change.df <- change %>% 
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Difference")
+
+
 # Turn NPP use into data.frames for plotting (all)
 # [%]
 
@@ -281,6 +291,15 @@ present.natural.npp.use.df <- present.natural.npp.use %>%
 # Combined
 npp.use <- bind_rows(current.npp.use.df, 
                      present.natural.npp.use.df)
+
+# Percentage point difference
+change.pct.df <- change.pct.point %>%
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Percentage point difference")
 
 
 # Turn NPP use into data.frames for plotting (megafauna)

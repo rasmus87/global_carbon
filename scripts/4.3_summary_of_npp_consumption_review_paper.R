@@ -57,3 +57,4 @@ consumption %>%
             q975 = quantile(`%NPP consumed`, 0.975),
             max = max(`%NPP consumed`),
             n = n())
+

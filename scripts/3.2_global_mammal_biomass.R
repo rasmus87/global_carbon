@@ -13,7 +13,7 @@ set.seed(42)
 n.samples <- 1000
 
 # Load population density posterior distribution
-dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # log10 individuals / km2
+dens <- read_csv("../mammal_density/builds/densities_post.pred.csv") # log10 individuals / km2
 # Make sure all species are there
 all(df$Binomial.1.2 %in% names(dens))
 # Subset
@@ -24,7 +24,7 @@ stopifnot(all.equal(names(dens), df$Binomial.1.2))
 log10dens.samples <- t(sample_n(dens, n.samples))
 
 # Load alternative population density posterior distribution
-dens.alt <- read_csv("../mammal_density/builds/3_densities_post.pred.alt.csv") # log10 individuals / km2
+dens.alt <- read_csv("../mammal_density/builds/densities_post.pred.alt.csv") # log10 individuals / km2
 # Make sure all species are there
 all(df$Binomial.1.2 %in% names(dens.alt))
 # Subset
@@ -120,9 +120,9 @@ prob.pantheria <- tibble(src = "Imputed based on PanTHERIA", Binomial.1.2 = df$B
 density.alt <- 10^apply(log10dens.samples.alt, 1, median)
 prob.alt <- tibble(src = "Imputed based on TetraDENS", Binomial.1.2 = df$Binomial.1.2[p], dens.pr.km2 = round(density.alt[p],2)) %>% arrange(dens.pr.km2)
 
-pant <- read_csv("../mammal_density/builds/imputation_dataset.csv")
+pant <- read_csv("../mammal_density/builds/imputation_dataset_PanTHERIA.csv")
 pant <- pant %>% filter(Order.1.2 == "Proboscidea") %>% transmute(src = "PanTHERIA", Binomial.1.2, dens.pr.km2 = 10^log10density)
-tetra <- read_csv("../mammal_density/builds/imputation_dataset_PanTetra.csv")
+tetra <- read_csv("../mammal_density/builds/imputation_dataset_PanTHERIA_TetraDENSITY.csv")
 tetra <- tetra %>% filter(Order.1.2 == "Proboscidea") %>% transmute(src = "TetraDENSITY", Binomial.1.2, dens.pr.km2 = 10^log10density)
 tetra.m <- tetra %>% group_by(Binomial.1.2) %>% summarise(dens.pr.km2 = median(dens.pr.km2)) %>% mutate(src = "TetraDENSITY median")
 tetra.025 <- tetra %>% group_by(Binomial.1.2) %>% summarise(dens.pr.km2 = quantile(dens.pr.km2, 0.025)) %>% mutate(src = "TetraDENSITY Quantile.025")

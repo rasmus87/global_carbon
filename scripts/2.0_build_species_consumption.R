@@ -22,7 +22,7 @@ fmr <- fmr[df$Binomial.1.2]
 stopifnot(all.equal(names(fmr), df$Binomial.1.2))
 
 # Load population density posterior distribution
-dens <- read_csv("../mammal_density/builds/3_densities_post.pred.csv") # log10 individuals / km2
+dens <- read_csv("../mammal_density/builds/densities_post.pred.csv") # log10 individuals / km2
 # Make sure all species are there
 all(df$Binomial.1.2 %in% names(dens))
 # Subset
@@ -114,3 +114,4 @@ density <- 10^df$log10density # Naive version
 Q = density * biomass.consumption.kgC.yr # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
 consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
 write_csv(consumption, "builds/species.consumption.kgC.yr.km2.naive.csv")
+

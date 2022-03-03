@@ -40,7 +40,7 @@ consumption <- consumption.summary %>%
 
 
 # Load density data
-density.samples <- read_csv("builds/sampled.density.distribution.kgC.yr.km2.csv", col_types = cols()) # [kgC / (km2 * year)]
+density.samples <- read_csv("builds/sampled.density.distribution.csv", col_types = cols()) # [kgC / (km2 * year)]
 # Alignment sanity check 
 stopifnot(all(density.samples$Binomial.1.2 == df$Binomial.1.2))
 

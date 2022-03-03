@@ -39,14 +39,14 @@ df <- df %>% filter(Binomial.1.2 %in% terrestrial)
 # Load Field Metabolic Rate and Population density -----------------------------
 
 # Load FMR and check that we have FMR for all species
-fmr <- read_csv("../metabolic_rate/builds/Table S5 Imputed metabolic rate.csv", col_types = cols())
+fmr <- read_csv("../metabolic_rate/builds/Imputed metabolic rate.csv", col_types = cols())
 all(df$Binomial.1.2 %in% fmr$Binomial.1.2)
 
 # Select important variables from FMR and join to df
 fmr <- fmr %>% 
   transmute(Binomial.1.2, 
             log10fmr = log10.fmr.mean, 
-            se.fmr = sd)
+            se.fmr = sd.fmr)
 df <- df %>% left_join(fmr, by = "Binomial.1.2")
 
 # Load animal density and check that we have density for all species
@@ -59,19 +59,6 @@ dens <- dens %>%
             log10density = log10.density.mean, 
             se.dens = sd)
 df <- df %>% left_join(dens, by = "Binomial.1.2")
-
-# Load animal density alternative from a PanTHERIA and TetraDENSITY combination
-dens.alt <- read_csv("../mammal_density/output/Table S4 Imputed density - PanTetra.csv", col_types = cols())
-all(df$Binomial.1.2 %in% dens.alt$Binomial.1.2)
-
-# Select important variables from dens and join to df
-dens.alt <- dens.alt %>% 
-  transmute(Binomial.1.2, 
-            log10density.alt = log10.density.mean, 
-            se.dens.alt = sd)
-df <- df %>% left_join(dens.alt, by = "Binomial.1.2")
-
-
 
 # Write output dataset ----------------------------------------------------
 # Write csv of df

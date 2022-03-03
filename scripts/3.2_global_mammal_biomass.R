@@ -23,18 +23,6 @@ stopifnot(all.equal(names(dens), df$Binomial.1.2))
 # Sample
 log10dens.samples <- t(sample_n(dens, n.samples))
 
-# Load alternative population density posterior distribution
-dens.alt <- read_csv("../mammal_density/builds/densities_post.pred.alt.csv") # log10 individuals / km2
-# Make sure all species are there
-all(df$Binomial.1.2 %in% names(dens.alt))
-# Subset
-dens.alt <- dens.alt[df$Binomial.1.2]
-# Make sure alignment is right
-stopifnot(all.equal(names(dens.alt), df$Binomial.1.2))
-# Sample
-log10dens.samples.alt <- t(sample_n(dens.alt, n.samples))
-
-
 
 # Global mammal biomass in Carbon -----------------------------------------
 

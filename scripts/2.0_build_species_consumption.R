@@ -1,5 +1,4 @@
 # Estimate consumption per species
-# 27/07-2021 Rasmus Ø Pedersen
 
 # Load libraries
 library(tidyverse)
@@ -43,8 +42,6 @@ log10fmr.samples <- t(sample_n(fmr, n.samples))
 log10dens.samples <- t(sample_n(dens, n.samples))
 
 
-
-
 # Translate FMR to carbon consumption per species -----------------------------
 
 ## Metabolizable energy in plant dry matter:
@@ -82,9 +79,12 @@ biomass.consumption.kgC.yr.samples <- 10^log10fmr.samples * 365.25 / ME.carbon.s
 # Species biomass consumption pr km2 sampled distribution
 density.samples <- 10^log10dens.samples # [individuals / km2]
 Q.samples = density.samples * biomass.consumption.kgC.yr.samples # [individuals / km2] * [kgC / year]
-colnames(Q.samples) <- paste0("Q.sample.", 1:n.samples)
+colnames(Q.samples) <- paste0("sample.", 1:n.samples)
 consumption.samples <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(Q.samples))
 write_csv(consumption.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
+colnames(density.samples) <- paste0("sample.", 1:n.samples)
+density.samples.table <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(density.samples))
+write_csv(density.samples.table, "builds/sampled.density.distribution.kgC.yr.km2.csv")
 
 
 

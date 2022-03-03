@@ -71,17 +71,6 @@ paste0("Present natural mass: ", signif(mass.pn[2], 2), " PgC (95%-CI: ", signif
 paste0("Current potential mass: ", signif(mass.cu[2], 2), " PgC (95%-CI: ", signif(mass.cu[1], 2), "-", signif(mass.cu[3], 2), ")")
 paste0("Current without CR/EN/VU mass: ", signif(mass.cu.r[2], 2), " PgC (95%-CI: ", signif(mass.cu.r[1], 2), "-", signif(mass.cu.r[3], 2), ")")
 
-density.samples.alt <- 10^log10dens.samples.alt # km^-2
-mass.pr.cell.samples.alt <- density.samples.alt * mass.Pg * wet_to_carbon * cell.area # Pg Carbon
-mass.pr.cell.summary.alt <- apply(mass.pr.cell.samples.alt, 1, function(x) c(quantile(x, 0.025), median = median(x), quantile(x, 0.975)))
-mass.cu.alt <- colSums(t(mass.pr.cell.summary.alt) * n.cells.cu)
-mass.pn.alt <- colSums(t(mass.pr.cell.summary.alt) * n.cells.pn)
-mass.cu.r.alt <- colSums(t(mass.pr.cell.summary.alt) * n.cells.cu * !(df$IUCN.Status.1.2 %in% c("EP", "EX", "EW", "CR", "EN", "VU")))
-
-paste0("Present natural mass: ", signif(mass.pn.alt[2], 2), " PgC (95%-CI: ", signif(mass.pn.alt[1], 2), "-", signif(mass.pn.alt[3], 2), ")")
-paste0("Current potential mass: ", signif(mass.cu.alt[2], 2), " PgC (95%-CI: ", signif(mass.cu.alt[1], 2), "-", signif(mass.cu.alt[3], 2), ")")
-paste0("Current without CR/EN/VU mass: ", signif(mass.cu.r.alt[2], 2), " PgC (95%-CI: ", signif(mass.cu.r.alt[1], 2), "-", signif(mass.cu.r.alt[3], 2), ")")
-
 # Proboscidea only
 density.samples <- 10^log10dens.samples # km^-2
 density.samples <- density.samples * (df$Order.1.2 == "Proboscidea")

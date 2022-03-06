@@ -25,12 +25,6 @@ ltw.eco.unit.npp.consumption <- eco.units %>%
               count(realm, biome, period) %>%
               dplyr::select(1:3))
 
-# d: Eco-unit mass [Mg / km2]
-eco.unit.mass <- mass.df %>%
-  left_join(eco.units, by = c("x", "y")) %>%
-  mutate(period = fct_relevel(period, "Present natural")) %>%
-  filter(!is.na(period))
-  
 # Setup period colors
 period.colors <- c("Present natural" = "#b2df8a", "Current" = "#a6cee3")
 
@@ -130,39 +124,9 @@ p3c <- ggplot(ltw.eco.unit.npp.consumption, aes(period, value, fill = period)) +
     panel.grid.major = element_blank()
   )
 
-# c: Total mammal mass [Mg / km2]
-p3d <- ggplot(eco.unit.mass, aes(period, value, fill = period)) +
-  geom_violin(width = 0.7, scale = "width", linetype = "blank") +
-  geom_boxplot(
-    width = 0.10,
-    col = "black",
-    position = position_dodge(width = 0.7),
-    outlier.shape = 20, 
-    outlier.size = 0.5,
-    show.legend = FALSE, 
-    fill = "black",
-  ) +
-  stat_summary(
-    fun = median,
-    geom = "point",
-    col = "white",
-    size = 1,
-    shape = 20,
-    position = position_dodge(width = 0.7)) +
-  theme_R() +
-  ylab(expression((a)~Mammal~mass~(Mg/km^2))) +
-  xlab(NULL) +
-  scale_fill_manual(values = period.colors, name = "Period") +
-  theme(
-    strip.text.x = element_text(size = 5.4),
-    axis.text.x = element_text(angle = 30, vjust = .8, hjust = .8),
-    legend.position = "none",
-    panel.grid.minor = element_blank(),
-    panel.grid.major = element_blank()
-  )
 
 p3 <- cowplot::plot_grid(p3a, p3b, p3c, nrow = 1)
-p3.alt <- cowplot::plot_grid(p3a, p3b, p3c, p3d, nrow = 1)
+p3.alt <- cowplot::plot_grid(p3a, p3b, p3c, nrow = 1)
 p3 <- p3.alt
 
 if(full) {

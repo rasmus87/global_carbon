@@ -8,26 +8,31 @@
 # Summarise NPP use (all) [%]
 (npp.use.summary <- npp.use %>% 
    group_by(period) %>%
-   summarise(mean = mean(value, na.rm = T) %>% signif(2),
-             sd = sd(value, na.rm = T) %>% signif(2),
-             median = median(value, na.rm= T) %>% signif(2),
-             q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
-             q.975 = quantile(value, .975, na.rm = T) %>% signif(2),
+   summarise(mean = mean(value, na.rm = T) %>% signif(3),
+             sd = sd(value, na.rm = T) %>% signif(3),
+             median = median(value, na.rm= T) %>% signif(3),
+             q.025 = quantile(value, .025, na.rm = T) %>% signif(3),
+             q.975 = quantile(value, .975, na.rm = T) %>% signif(3),
              n = n()))
 # PN use is x times higher than CU use
-npp.use.summary[[4]][2]/npp.use.summary[[4]][1]
+npp.use.summary$median[2]/npp.use.summary$median[1]
 # Which is x % reduction
-signif(diff(npp.use.summary[[4]])/npp.use.summary[[4]][2] * 100, 2)
+signif(diff(npp.use.summary$median)/npp.use.summary$median[2] * 100, 2)
+
 
 # Summarise NPP use (megafauna) [%]
 (megafauna.npp.use.summary <- megafauna.npp.use %>% 
     group_by(period) %>%
-    summarise(mean = mean(value, na.rm = T) %>% signif(2),
-              sd = sd(value, na.rm = T) %>% signif(2),
-              median = median(value, na.rm= T) %>% signif(2),
-              q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
-              q.975 = quantile(value, .975, na.rm = T) %>% signif(2),
+    summarise(mean = mean(value, na.rm = T) %>% signif(3),
+              sd = sd(value, na.rm = T) %>% signif(3),
+              median = median(value, na.rm= T) %>% signif(3),
+              sum = sum(value, na.rm = T) %>% signif(3),
+              q.025 = quantile(value, .025, na.rm = T) %>% signif(3),
+              q.975 = quantile(value, .975, na.rm = T) %>% signif(3),
               n = n()))
+# Which is x % reduction
+signif(diff(megafauna.npp.use.summary$median)/megafauna.npp.use.summary$median[2] * 100, 2)
+## 88% reduction in NPP consumption by megafauna (6.4% to 0.74%). 
 
 # Megafauna NPP use compared to all fauna:
 # Current
@@ -43,14 +48,22 @@ paste0("In the present natural All fauna uses ",
        signif(megafauna.npp.use.summary$mean[2]/npp.use.summary$mean[2] * 100, 2),
        "%.")
 
-# Magafauna NPP use drop [%]:
-paste0("There has been an overall drop in NPP consumption of ", 
-       overall.drop <- diff(npp.use.summary$mean), 
-       "%-point, and within just the megafauna the drop is ",
-       megafauna.drop <- diff(megafauna.npp.use.summary$mean),
-       "%-point, which means that of the overall decrease in consumption, megafauna constitues ",
-       signif(megafauna.drop/overall.drop * 100, 2),
-       "% of that.")
+# Fraction of megafauna effect per cell:
+(fraction <- mutate(npp.use, npp.consumption = value, .keep = "unused") %>% 
+  left_join(mutate(megafauna.npp.use, npp.consumption.megafauna = value, .keep = "unused")) %>% 
+  mutate(value = npp.consumption.megafauna/npp.consumption) %>% 
+  group_by(period) %>%
+  summarise(mean = mean(value, na.rm = T) %>% signif(3),
+            sd = sd(value, na.rm = T) %>% signif(3),
+            median = median(value, na.rm= T) %>% signif(3),
+            q.025 = quantile(value, .025, na.rm = T) %>% signif(3),
+            q.975 = quantile(value, .975, na.rm = T) %>% signif(3),
+            n = n()))
+signif(diff(fraction$median)/fraction$median[2] * 100, 2)
+## Current megafauna accounts for only a median 8.0% (mean 14%) of the vegetation consumption.
+## The present-natural megafauna account for a median 46% (mean 45%) hereof,
+# i.e. their relative median importance have decreased 83%.
+
 
 # Summarise NPP use (LTW) [%]
 (ltw.use <- ltw %>% 
@@ -111,4 +124,8 @@ tot.npp
 (tot.pres.nat - tot.current)/tot.npp * 100
 (tot.pres.nat.lw - tot.current.lw)/tot.npp * 100
 (tot.pres.nat.hi - tot.current.hi)/tot.npp * 100
+
+
+
+
 

@@ -289,7 +289,6 @@ present.natural.consumption.df <- present.natural.consumption.map %>%
 consumption.df <- bind_rows(current.consumption.df, 
                             present.natural.consumption.df)
 
-
 # Percentage difference
 change.df <- change %>% 
   as("SpatialPixelsDataFrame") %>% 
@@ -298,6 +297,30 @@ change.df <- change %>%
             x, 
             y, 
             period = "Difference")
+
+
+# Current megafauna consumption
+current.megafauna.consumption.df <- current.megafauna.consumption.map %>%
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Current")
+
+# Present natural megafauna consumption
+present.natural.megafauna.consumption.df <- present.natural.megafauna.consumption.map %>% 
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Present natural")
+
+# Combined megafauna consumption
+megafauna.consumption.df <- bind_rows(current.megafauna.consumption.df, 
+                                      present.natural.megafauna.consumption.df)
+
 
 
 # Current mass

@@ -23,6 +23,8 @@ serengeti <- spTransform(serengeti, projection(r))
 cell <- cellFromXY(r, serengeti)
 
 paste0("Current: ", round(current.consumption.map[cell]), " MgC/km2/yr")
+paste0("Current low .025: ", round(current.consumption.map.lw[cell]), " MgC/km2/yr")
+paste0("Current low .925: ", round(current.consumption.map.hi[cell]), " MgC/km2/yr")
 paste0("Present natural: ", round(present.natural.consumption.map[cell]), " MgC/km2/yr")
 
 paste0("Current: ", round(current.npp.use[cell]), "% of NPP")

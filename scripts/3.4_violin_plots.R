@@ -7,26 +7,29 @@
 # a: Eco-unit consumption [MgC / yr /km2]
 eco.unit.carbon.consumption <- consumption.df %>%
   left_join(eco.units, by = c("x", "y")) %>%
-  mutate(period = fct_relevel(period, "Present natural")) %>%
+  mutate(period = fct_recode(period, "Present-natural" = "Present natural")) %>%
+  mutate(period = fct_relevel(period, "Present-natural")) %>%
   filter(!is.na(period))
 
 # b: Eco-unit consumption of NPP [%]
 eco.unit.npp.consumption <- npp.use %>% 
   left_join(eco.units, by = c("x", "y")) %>%
-  mutate(period = fct_relevel(period, "Present natural")) %>%
+  mutate(period = fct_recode(period, "Present-natural" = "Present natural")) %>%
+  mutate(period = fct_relevel(period, "Present-natural")) %>%
   filter(!is.na(period))
 
 # c: Eco-unit consumption of NPP in Last of The Wild [%]
 ltw.eco.unit.npp.consumption <- eco.units %>% 
   full_join(ltw, by = c("x", "y")) %>%
-  mutate(period = fct_relevel(period, "Present natural")) %>%
+  mutate(period = fct_recode(period, "Present-natural" = "Present natural")) %>%
+  mutate(period = fct_relevel(period, "Present-natural")) %>%
   filter(!is.na(period)) %>% 
   bind_rows(eco.unit.npp.consumption %>%
               count(realm, biome, period) %>%
               dplyr::select(1:3))
 
 # Setup period colors
-period.colors <- c("Present natural" = "#b2df8a", "Current" = "#a6cee3")
+period.colors <- c("Present-natural" = "#b2df8a", "Current" = "#a6cee3")
 
 
 # Global violin plots -----------------------------------------------------
@@ -82,7 +85,7 @@ p3b <- ggplot(eco.unit.npp.consumption, aes(period, value, fill = period)) +
     shape = 20,
     position = position_dodge(width = 0.7)) +
   theme_R() +
-  ylab("(b) Fraction of NPP consumed (%)") +
+  ylab("(b) Fraction NPP consumed (%)") +
   xlab(NULL) +
   scale_fill_manual(values = period.colors, name = "Period") +
   theme(
@@ -113,7 +116,7 @@ p3c <- ggplot(ltw.eco.unit.npp.consumption, aes(period, value, fill = period)) +
     shape = 20,
     position = position_dodge(width = 0.7)) +
   theme_R() +
-  ylab("(c) Fraction of NPP consumed in LTW (%)") +
+  ylab("(c) Fraction NPP consumed (LTW) (%)") +
   xlab(NULL) +
   scale_fill_manual(values = period.colors, name = "Period") +
   theme(
@@ -126,13 +129,11 @@ p3c <- ggplot(ltw.eco.unit.npp.consumption, aes(period, value, fill = period)) +
 
 
 p3 <- cowplot::plot_grid(p3a, p3b, p3c, nrow = 1)
-p3.alt <- cowplot::plot_grid(p3a, p3b, p3c, nrow = 1)
-p3 <- p3.alt
 
 if(full) {
-  ggsave("./output/fig3_global_violins_full.png", p3, width = 89, height = 89, units = "mm", dpi = 600, scale = 1.5)
+  ggsave("./output/fig3_global_violins_full.png", p3, width = 89, height = 55, units = "mm", dpi = 600, scale = 1.5)
 } else {
-  ggsave("./output/fig3_global_violins200.png", p3, width = 89, height = 89, units = "mm", dpi = 600, scale = 1.5)
+  ggsave("./output/fig3_global_violins200.png", p3, width = 89, height = 55, units = "mm", dpi = 600, scale = 1.5)
 }
 
 
@@ -197,7 +198,7 @@ p4b <- ggplot(eco.unit.npp.consumption %>% filter(!is.na(realm)), aes(realm, val
     position = position_dodge(width = 0.7),
     show.legend = FALSE) +
   theme_bw() +
-  ylab("(b) Fraction of NPP consumed (%)") +
+  ylab("(b) Fraction NPP consumed (%)") +
   xlab(NULL) +
   scale_fill_manual(values = period.colors, name = "Period") +
   theme(
@@ -231,7 +232,7 @@ p4c <- ggplot(ltw.eco.unit.npp.consumption %>% filter(!is.na(realm)), aes(realm,
     position = position_dodge(width = 0.7),
     show.legend = FALSE) +
   theme_bw() +
-  ylab("(c) Fraction of NPP consumed in LTW (%)") +
+  ylab("(c) Fraction NPP consumed (LTW) (%)") +
   xlab(NULL) +
   scale_fill_manual(values = period.colors, name = "Period") +
   theme(
@@ -245,7 +246,7 @@ p4c <- ggplot(ltw.eco.unit.npp.consumption %>% filter(!is.na(realm)), aes(realm,
 p4 <- cowplot::plot_grid(p4a, p4b, p4c, nrow = 3)
 
 if(full) {
-  ggsave("./output/fig4_eco_units_violins_full.png", p4, width = 183, height = 220, units = "mm", dpi = 600, scale = 1.5)
+  ggsave("./output/fig4_eco_units_violins_full.png", p4, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.5)
 } else {
-  ggsave("./output/fig4_eco_units_violins200.png", p4, width = 183, height = 220, units = "mm", dpi = 600, scale = 1.5)
+  ggsave("./output/fig4_eco_units_violins200.png", p4, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.5)
 }

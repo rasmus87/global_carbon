@@ -35,16 +35,16 @@ log10dens.samples <- t(sample_n(dens, n.samples))
 # [Pg] = [GtC] = 0.15 * BM
 
 # Remove cells as selected in 3.0
-current.maps <- current.maps[, -remove.areas]
-present.natural.maps <- present.natural.maps[, -remove.areas]
+current.maps.reduced <- current.maps[, -remove.areas]
+present.natural.maps.reduced <- present.natural.maps[, -remove.areas]
 
 # Megafauna only: # Definition as https://www.pnas.org/doi/10.1073/pnas.0801918105#sec-1
 # Megafauna only test for comparison to Barnoky (2008)
 mf <- df %>% filter(Mass.g >= 44000) %>% pull(Binomial.1.2)
 
-n.cells.cu <- rowSums(current.maps[], na.rm = TRUE)
+n.cells.cu <- rowSums(current.maps.reduced[], na.rm = TRUE)
 n.cells.cu[!names(n.cells.cu) %in% mf] <- 0 # Megafauna only test for comparison to Barnoky (2008)
-n.cells.pn <- rowSums(present.natural.maps[], na.rm = TRUE)
+n.cells.pn <- rowSums(present.natural.maps.reduced[], na.rm = TRUE)
 n.cells.pn[!names(n.cells.pn) %in% mf] <- 0 # Megafauna only test for comparison to Barnoky (2008)
 base.map <- raster("builds/base_map.tif")
 # dens [1/km2] * mass [g] * 10^-15 Pg/g * cell-resolution [m^2] * 10^-6 (km/m)^2
@@ -56,12 +56,12 @@ mass.Pg <- df$Mass.g * 10^-15 # Pg (or Gt)
 density <- 10^df$log10density # km^-2
 mass.pr.cell <- density * mass.Pg * wet_to_carbon * cell.area # Pg Carbon
 
-order.tab <- df %>% 
-  mutate(mass = mass.pr.cell * n.cells.cu, massT = sum(mass)) %>% 
-  group_by(Order.1.2) %>% 
-  summarise(mass.Pg = sum(mass), pct = mass.Pg/massT[1]*100, n.species = n()) %>% 
-  print(n = 100)
-order.tab
+# order.tab <- df %>% 
+#   mutate(mass = mass.pr.cell * n.cells.cu, massT = sum(mass)) %>% 
+#   group_by(Order.1.2) %>% 
+#   summarise(mass.Pg = sum(mass), pct = mass.Pg/massT[1]*100, n.species = n()) %>% 
+#   print(n = 100)
+# order.tab
 # write_excel_csv(order.tab, "output/Current_total_mass_by_order.csv")
 
 density.samples <- 10^log10dens.samples # km^-2

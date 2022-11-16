@@ -10,7 +10,8 @@ current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fil
   geom_tile() +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
-                     limits = range(consumption.df$value)) +
+                     limits = range(consumption.df$value),
+                     option = "turbo") +
   theme_map() +
   labs(subtitle = "a) Current") +
   theme(plot.subtitle = element_text(face = "bold", size = 10)) +
@@ -24,7 +25,8 @@ present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x
   geom_tile() +
   scale_fill_viridis(name = Consumption~(MgC/yr/km^2),
                      na.value = "white",
-                     limits = range(consumption.df$value)) +
+                     limits = range(consumption.df$value),
+                     option = "turbo") +
   theme_map() +
   labs(subtitle = "b) Present-natural") +
   theme(plot.subtitle = element_text(face = "bold", size = 10)) +
@@ -35,11 +37,12 @@ present.natural.consumption.plot <- ggplot(present.natural.consumption.df, aes(x
 change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  scale_fill_gradientn(name = Difference~('%'),
-                       na.value = "white",
-                       colours = plasma(10)) +
+  scale_fill_viridis(name = Difference~('%'),
+                     na.value = "white",
+                     option = "turbo",
+                     direction = -1) +
   theme_map() +
-  labs(subtitle = "c) Change") +
+  labs(subtitle = "c) Change (a/b - 1)") +
   theme(plot.subtitle = element_text(face = "bold", size = 10)) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
@@ -47,12 +50,14 @@ change.plot <- ggplot(change.df, aes(x = x, y = y, fill = value)) +
 g11 <- ggplotGrob(current.consumption.plot)
 g12 <- ggplotGrob(present.natural.consumption.plot)
 g13 <- ggplotGrob(change.plot)
-p1 <- gtable_rbind(g11, g12, g13)
+line <- linesGrob(y = 0, gp = gpar(lty = 2))
+p1 <- arrangeGrob(g11, g12, line, g13, nrow = 4, heights = c(1, 1, .01, 1))
+# p1 <- gtable_rbind(g11, g12, g13)
 arrangeGrob(p1) %>% plot
 if(full) {
-  ggsave("./output/fig1_carbon_consumption_full.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig1_carbon_consumption_fullx.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 } else {
-  ggsave("./output/fig1_carbon_consumption200.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig1_carbon_consumption200x.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
 
 
@@ -65,7 +70,8 @@ frac.npp.cu.consumption.plot <- ggplot(current.npp.use.df %>% mutate(value = na_
   geom_tile() +
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
                      na.value = "hotpink",
-                     limits = range(npp.use$value[npp.use$value != 101])) +
+                     limits = range(npp.use$value[npp.use$value != 101]),
+                     option = "turbo") +
   theme_map() +
   labs(subtitle = "a) Current") +
   theme(plot.subtitle = element_text(face = "bold", size = 10)) +
@@ -78,7 +84,8 @@ frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(val
   geom_tile() +
   scale_fill_viridis(name = "Consumption of\ncurrent NPP (%)",
                      na.value = "hotpink",
-                     limits = range(npp.use$value[npp.use$value != 101])) +
+                     limits = range(npp.use$value[npp.use$value != 101]),
+                     option = "turbo") +
   theme_map() +
   labs(subtitle = "b) Present-natural") +
   theme(plot.subtitle = element_text(face = "bold", size = 10)) +
@@ -89,11 +96,12 @@ frac.npp.pn.consumption.plot <- ggplot(present.natural.npp.use.df %>% mutate(val
 pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
   geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
   geom_tile() +
-  scale_fill_gradientn(name = Difference~('%-point'),
-                       na.value = "hotpink",
-                       colours = plasma(10)) +
+  scale_fill_viridis(name = Difference~('%-point'),
+                     na.value = "hotpink",
+                     option = "turbo",
+                     direction = -1) +
   theme_map() +
-  labs(subtitle = "c) Change") +
+  labs(subtitle = "c) Change (a - b)") +
   theme(plot.subtitle = element_text(face = "bold", size = 10)) +
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
@@ -101,11 +109,13 @@ pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 10
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
 g23 <- ggplotGrob(pct.pt.diffrence.plot)
-p2 <- gtable_rbind(g21, g22, g23)
+line <- linesGrob(y = 0, gp = gpar(lty = 2))
+p2 <- arrangeGrob(g21, g22, line, g23, nrow = 4, heights = c(1, 1, .01, 1))
+# p2 <- gtable_rbind(g21, g22, g23)
 arrangeGrob(p2) %>% plot
 if(full) {
-  ggsave("./output/fig2_fraction_npp_consumed_full.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig2_fraction_npp_consumed_fullx.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 } else {
-  ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig2_fraction_npp_consumed200x.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
 

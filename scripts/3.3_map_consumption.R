@@ -106,16 +106,29 @@ pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 10
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
+pct.pt.diffrence.plot2 <- ggplot(change.pct.df2 %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
+  geom_tile() +
+  scale_fill_viridis(name = Difference~('%'),
+                     na.value = "hotpink",
+                     option = "turbo",
+                     direction = -1) +
+  theme_map() +
+  labs(subtitle = "c) Change a/b - 1") +
+  theme(plot.subtitle = element_text(face = "bold", size = 10)) +
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
+
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
-g23 <- ggplotGrob(pct.pt.diffrence.plot)
+g23 <- ggplotGrob(pct.pt.diffrence.plot2)
 line <- linesGrob(y = 0, gp = gpar(lty = 2))
 p2 <- arrangeGrob(g21, g22, line, g23, nrow = 4, heights = c(1, 1, .01, 1))
 # p2 <- gtable_rbind(g21, g22, g23)
 arrangeGrob(p2) %>% plot
 if(full) {
-  ggsave("./output/fig2_fraction_npp_consumed_fullx.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig2_fraction_npp_consumed_fullx2.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 } else {
-  ggsave("./output/fig2_fraction_npp_consumed200x.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig2_fraction_npp_consumed200x2.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
 

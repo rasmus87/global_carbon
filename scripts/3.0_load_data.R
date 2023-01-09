@@ -263,6 +263,10 @@ present.natural.megafauna.npp.use[present.natural.megafauna.npp.use[] >= 100.5] 
 change.pct.point <- current.npp.use - present.natural.npp.use
 change.pct.point[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct.point[])
 
+change.pct.point2 <- (current.npp.use/present.natural.npp.use - 1) * 100
+change.pct.point2[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct.point2[])
+change.pct.point2[change.pct.point2 > 0] <- 0
+
 
 # Turn carbon use into data.frames for plotting (all)
 # [MgC / km2 / year]
@@ -378,6 +382,13 @@ change.pct.df <- change.pct.point %>%
             y, 
             period = "Percentage point difference")
 
+change.pct.df2 <- change.pct.point2 %>%
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Percentage point difference")
 
 # Turn NPP use into data.frames for plotting (megafauna)
 # [%]

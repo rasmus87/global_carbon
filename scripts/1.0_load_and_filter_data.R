@@ -34,10 +34,7 @@ terrestrial <- df %>%
 # Filter traits to the terrestrial list
 df <- df %>% filter(Binomial.1.2 %in% terrestrial)
 nrow(df)
-
-# Remove strict carnivores:
-df <- df %>% filter(Diet.Plant > 0)
-nrow(df)
+# [1] 4534
 
 
 # Load Field Metabolic Rate and Population density -----------------------------

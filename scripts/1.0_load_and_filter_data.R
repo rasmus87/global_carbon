@@ -1,5 +1,5 @@
 # Load and filter data to the wanted species list
-# 22/07-2021 Rasmus Ø Pedersen
+# 08/03-2023 Rasmus Ø Pedersen
 
 # Load libraries
 library(tidyverse)
@@ -33,7 +33,11 @@ terrestrial <- df %>%
 
 # Filter traits to the terrestrial list
 df <- df %>% filter(Binomial.1.2 %in% terrestrial)
+nrow(df)
 
+# Remove strict carnivores:
+df <- df %>% filter(Diet.Plant > 0)
+nrow(df)
 
 
 # Load Field Metabolic Rate and Population density -----------------------------

@@ -46,19 +46,23 @@ all(df$Binomial.1.2 %in% fmr$Binomial.1.2)
 # Select important variables from FMR and join to df
 fmr <- fmr %>% 
   transmute(Binomial.1.2, 
-            log10fmr = log10.fmr.mean, 
-            se.fmr = sd.fmr)
+            log10.fmr.mean,
+            se.dens = sd.fmr,
+            fmr.mean,
+            fmr.geo.mean)
 df <- df %>% left_join(fmr, by = "Binomial.1.2")
 
 # Load animal density and check that we have density for all species
-dens <- read_csv("../mammal_density/output/Table S4 Imputed density.csv", col_types = cols())
+dens <- read_csv("../mammal_density/output/Table S2 Imputed density.csv", col_types = cols())
 all(df$Binomial.1.2 %in% dens$Binomial.1.2)
 
 # Select important variables from dens and join to df
 dens <- dens %>% 
   transmute(Binomial.1.2, 
-            log10density = log10.density.mean, 
-            se.dens = sd)
+            log10.density.mean,
+            se.dens = sd,
+            density.mean,
+            density.geo.mean)
 df <- df %>% left_join(dens, by = "Binomial.1.2")
 
 # Write output dataset ----------------------------------------------------

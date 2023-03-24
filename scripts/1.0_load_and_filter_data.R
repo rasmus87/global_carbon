@@ -47,7 +47,7 @@ all(df$Binomial.1.2 %in% fmr$Binomial.1.2)
 fmr <- fmr %>% 
   transmute(Binomial.1.2, 
             log10.fmr.mean,
-            se.dens = sd.fmr,
+            se.fmr = sd.fmr,
             fmr.mean,
             fmr.geo.mean)
 df <- df %>% left_join(fmr, by = "Binomial.1.2")

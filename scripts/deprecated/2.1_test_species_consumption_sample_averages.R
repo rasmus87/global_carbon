@@ -27,13 +27,20 @@ consumption.naive <- read_csv("builds/species.consumption.kgC.yr.km2.naive.csv",
 
 # Check consumption models against each other
 ggplot(tibble(), aes(x = log10(Q))) +
-  geom_density(data = consumption.summary, aes(x = log10(ci.lw), fill = "S.CI"), lty = 2, alpha = .3) +
-  geom_density(data = consumption.summary, aes(x = log10(ci.hi), fill = "S.CI"), lty = 2, alpha = .3) +
-  geom_density(data = consumption.naive, aes(fill = "Naive"), lty = 3, alpha = .3) +
-  geom_density(data = consumption.summary, aes(x = log10(median), fill = "S.median"), lty = 3, alpha = .3) +
-  geom_density(data = consumption.corrected, aes(fill = "Corrected"), alpha = .3) +
-  geom_density(data = consumption.summary, aes(x = log10(mean), fill = "S.mean"), alpha = .3) +
+  geom_density(data = consumption.summary, aes(x = log10(ci.lw), col = "S.CI"), lty = 2, alpha = .3) +
+  geom_density(data = consumption.summary, aes(x = log10(ci.hi), col = "S.CI"), lty = 2, alpha = .3) +
+  geom_density(data = consumption.naive, aes(col = "Naive"), lty = 3, alpha = .3) +
+  geom_density(data = consumption.summary, aes(x = log10(median), col = "S.median"), lty = 3, alpha = .3, lwd = 1) +
+  geom_density(data = consumption.corrected, aes(col = "Corrected"), alpha = .3, lwd = 1) +
+  geom_density(data = consumption.summary, aes(x = log10(mean), col = "S.mean"), alpha = .3) +
   theme_bw() +
   scale_fill_discrete("Method")
 # Using the naive not log corrected means gives medians while using the corrected version gives means
 # We will use medians in the study
+
+
+mean(log10(consumption.summary$mean)) %>% round(2)
+mean(log10(consumption.corrected$Q)) %>% round(2)
+
+mean(log10(consumption.naive$Q)) %>% round(2)
+mean(log10(consumption.summary$median)) %>% round(2)

@@ -12,34 +12,27 @@ library(tictoc)
 df <- read_csv("builds/data.csv", col_types = cols())
 
 # Load FMR posterior distribution
-fmr <- read_csv("../metabolic_rate/builds/3_fmr_post.pred.csv") # log10 kJ/day
+log10fmr.samples <- read_csv("../metabolic_rate/builds/fmr_post.pred.csv") # log10 kJ/day
 # Make sure all species are there
-all(df$Binomial.1.2 %in% names(fmr))
+all(df$Binomial.1.2 %in% names(log10fmr.samples))
 # Subset
-fmr <- fmr[df$Binomial.1.2]
+log10fmr.samples <- log10fmr.samples[df$Binomial.1.2]
 # Make sure alignment is right
-stopifnot(all.equal(names(fmr), df$Binomial.1.2))
+stopifnot(all.equal(names(log10fmr.samples), df$Binomial.1.2))
+
 
 # Load population density posterior distribution
-dens <- read_csv("../mammal_density/builds/densities_post.pred.csv") # log10 individuals / km2
+log10dens.samples <- read_csv("../mammal_density/builds/densities_post.pred.csv") # log10 individuals / km2
 # Make sure all species are there
-all(df$Binomial.1.2 %in% names(dens))
+all(df$Binomial.1.2 %in% names(log10dens.samples))
 # Subset
-dens <- dens[df$Binomial.1.2]
+log10dens.samples <- log10dens.samples[df$Binomial.1.2]
 # Make sure alignment is right
-stopifnot(all.equal(names(dens), df$Binomial.1.2))
+stopifnot(all.equal(names(log10dens.samples), df$Binomial.1.2))
 
-
-
-# Sample FMR and density distributions ------------------------------------
-
-# Set seed to get consistent results:
-set.seed(42)
-
-# Sample the FMR and density data
-n.samples <- 1000
-log10fmr.samples <- t(sample_n(fmr, n.samples))
-log10dens.samples <- t(sample_n(dens, n.samples))
+# Set number of samples used
+stopifnot(nrow(log10fmr.samples) == nrow(log10dens.samples))
+n.samples <- nrow(log10fmr.samples)
 
 
 # Translate FMR to carbon consumption per species -----------------------------
@@ -78,40 +71,34 @@ biomass.consumption.kgC.yr.samples <- 10^log10fmr.samples * 365.25 / ME.carbon.s
 
 # Species biomass consumption pr km2 sampled distribution
 density.samples <- 10^log10dens.samples # [individuals / km2]
+# colnames(density.samples) <- paste0("sample.", 1:n.samples)
+# density.samples.table <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(density.samples))
+write_csv(density.samples, "builds/sampled.density.distribution.csv")
+
 Q.samples = density.samples * biomass.consumption.kgC.yr.samples # [individuals / km2] * [kgC / year]
-colnames(Q.samples) <- paste0("sample.", 1:n.samples)
-consumption.samples <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(Q.samples))
-write_csv(consumption.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
-colnames(density.samples) <- paste0("sample.", 1:n.samples)
-density.samples.table <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(density.samples))
-write_csv(density.samples.table, "builds/sampled.density.distribution.csv")
+# colnames(Q.samples) <- paste0("sample.", 1:n.samples)
+# consumption.samples <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(Q.samples))
+write_csv(Q.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
+
 
 
 
 
 # Translate FMR to carbon consumption per species using means only --------
 
-# Species biomass consumption pr km2
-# When data stems from a log-log model we need to correct else we will get
-# medians instead of mean
-# Smith, R. J. (1993). Logarithmic transformation bias in allometry. American
-# Journal of Physical Anthropology, 90(2), 215–228.
-# https://doi.org/10.1002/ajpa.1330900208
-# Strimbu, B. (2012). Correction for bias of models with lognormal distributed
-# variables in absence of original data. Annals of Forest Research, 55(2),
-# 265–279.
+# Species biomass consumption pr km2 [[Corrected means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
-biomass.consumption.kgC.yr <- exp((log(10) * df$se.fmr)^2/2) * 10^df$log10fmr * 365.25 / ME.carbon # log corrected version
-density <- exp((log(10) * df$se.dens)^2/2) * 10^df$log10density # log corrected version
+biomass.consumption.kgC.yr2 <- df$fmr.mean * 365.25 / ME.carbon
+density <- df$density.mean
 Q = density * biomass.consumption.kgC.yr # [individuals / km2] * [kgC / year]
 consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
-write_csv(consumption, "builds/species.consumption.kgC.yr.km2.csv")
+write_csv(consumption, "builds/species.consumption.means.kgC.yr.km2.csv")
 
-# Species biomass consumption pr km2 [[Naive version]]
+# Species biomass consumption pr km2 [[Geometric means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
-biomass.consumption.kgC.yr <- 10^df$log10fmr * 365.25 / ME.carbon # Naive version
-density <- 10^df$log10density # Naive version
+biomass.consumption.kgC.yr <- df$fmr.geo.mean * 365.25 / ME.carbon 
+density <- df$density.geo.mean
 Q = density * biomass.consumption.kgC.yr # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
-consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
-write_csv(consumption, "builds/species.consumption.kgC.yr.km2.naive.csv")
+consumption.geo <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
+write_csv(consumption.geo, "builds/species.consumption.geo.means.kgC.yr.km2.csv")
 

@@ -69,6 +69,11 @@ ME.carbon.samples <- ME.dm.samples / CC.samples # [kJ / kgC]
 # Species biomass consumption sampled distribution
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
 biomass.consumption.kgC.yr.samples <- 10^log10fmr.samples * 365.25 / ME.carbon.samples
+# Alignment check 
+stopifnot(all(names(biomass.consumption.kgC.yr.samples) == df$Binomial.1.2))
+# Estimate this in terms of plant consumption [kgC / year]
+plant.consumption.kgC.yr.samples <- sweep(biomass.consumption.kgC.yr.samples, MARGIN = 2, df$Diet.Plant/100, `*`)
+
 
 # Species biomass consumption pr km2 sampled distribution
 density.samples <- 10^log10dens.samples # [individuals / km2]
@@ -76,12 +81,10 @@ density.samples <- 10^log10dens.samples # [individuals / km2]
 # density.samples.table <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(density.samples))
 write_csv(density.samples, "builds/sampled.density.distribution.csv")
 
-Q.samples = density.samples * biomass.consumption.kgC.yr.samples # [individuals / km2] * [kgC / year]
+Q.samples = density.samples * plant.consumption.kgC.yr.samples # [individuals / km2] * [MgC / year / individuals]
 # colnames(Q.samples) <- paste0("sample.", 1:n.samples)
 # consumption.samples <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(Q.samples))
 write_csv(Q.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
-
-
 
 
 
@@ -90,16 +93,19 @@ write_csv(Q.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
 # Species biomass consumption pr km2 [[Corrected means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
 biomass.consumption.kgC.yr <- df$fmr.mean * 365.25 / ME.carbon
+plant.consumption.kgC.yr <- biomass.consumption.kgC.yr * df$Diet.Plant/100
+
 density <- df$density.mean
-Q = density * biomass.consumption.kgC.yr # [individuals / km2] * [kgC / year]
+Q = density * plant.consumption.kgC.yr # [individuals / km2] * [kgC / year]
 consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
 write_csv(consumption, "builds/species.consumption.means.kgC.yr.km2.csv")
 
 # Species biomass consumption pr km2 [[Geometric means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
 biomass.consumption.kgC.yr <- df$fmr.geo.mean * 365.25 / ME.carbon 
+plant.consumption.kgC.yr <- biomass.consumption.kgC.yr * df$Diet.Plant/100
 density <- df$density.geo.mean
-Q = density * biomass.consumption.kgC.yr # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
+Q = density * plant.consumption.kgC.yr # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
 consumption.geo <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
 write_csv(consumption.geo, "builds/species.consumption.geo.means.kgC.yr.km2.csv")
 

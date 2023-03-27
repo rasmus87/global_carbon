@@ -48,6 +48,7 @@ ME.dm.sd <- 1.4 * 1000
 ME.dm.samples <- matrix(rep(rnorm(n.samples, ME.dm, ME.dm.sd), nrow(df)),
                         byrow = T, nrow = nrow(df))
 
+
 ## Carbon content in dry matter:
 # For different parts of the plant: 
 # 45.01±5.23, 45.64±4.95, 46.85±3.98,  47.88±3.49
@@ -88,7 +89,7 @@ write_csv(Q.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
 
 # Species biomass consumption pr km2 [[Corrected means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
-biomass.consumption.kgC.yr2 <- df$fmr.mean * 365.25 / ME.carbon
+biomass.consumption.kgC.yr <- df$fmr.mean * 365.25 / ME.carbon
 density <- df$density.mean
 Q = density * biomass.consumption.kgC.yr # [individuals / km2] * [kgC / year]
 consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)

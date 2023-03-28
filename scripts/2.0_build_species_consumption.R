@@ -34,6 +34,9 @@ stopifnot(all.equal(names(log10dens.samples), df$Binomial.1.2))
 stopifnot(nrow(log10fmr.samples) == nrow(log10dens.samples))
 n.samples <- nrow(log10fmr.samples)
 
+# Strict non-herbivores
+no.herb <- which(df$Diet.Plant == 0)
+
 
 # Translate FMR to carbon consumption per species -----------------------------
 
@@ -74,38 +77,38 @@ stopifnot(all(names(biomass.consumption.kgC.yr.samples) == df$Binomial.1.2))
 # Estimate this in terms of plant consumption [kgC / year]
 plant.consumption.kgC.yr.samples <- sweep(biomass.consumption.kgC.yr.samples, MARGIN = 2, df$Diet.Plant/100, `*`)
 
-
 # Species biomass consumption pr km2 sampled distribution
 density.samples <- 10^log10dens.samples # [individuals / km2]
-# colnames(density.samples) <- paste0("sample.", 1:n.samples)
-# density.samples.table <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(density.samples))
 write_csv(density.samples, "builds/sampled.density.distribution.csv")
 
 Q.samples = density.samples * plant.consumption.kgC.yr.samples # [individuals / km2] * [MgC / year / individuals]
-# colnames(Q.samples) <- paste0("sample.", 1:n.samples)
-# consumption.samples <- bind_cols(Binomial.1.2 = df$Binomial.1.2, as_tibble(Q.samples))
+# Remove strict non-herbivores
+Q.samples <- Q.samples[, -no.herb]
 write_csv(Q.samples, "builds/sampled.consumption.distribution.kgC.yr.km2.csv")
 
 
 
 # Translate FMR to carbon consumption per species using means only --------
+# This does not include uncertainty of CC or ME
 
 # Species biomass consumption pr km2 [[Corrected means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
-biomass.consumption.kgC.yr <- df$fmr.mean * 365.25 / ME.carbon
-plant.consumption.kgC.yr <- biomass.consumption.kgC.yr * df$Diet.Plant/100
+plant.consumption.kgC.yr.mean <- df$fmr.mean * 365.25 / ME.carbon * df$Diet.Plant/100
 
-density <- df$density.mean
-Q = density * plant.consumption.kgC.yr # [individuals / km2] * [kgC / year]
-consumption <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
-write_csv(consumption, "builds/species.consumption.means.kgC.yr.km2.csv")
+Q = df$density.mean * plant.consumption.kgC.yr.mean # [individuals / km2] * [kgC / year]
+consumption.mean <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
+# Remove strict non-herbivores
+consumption.mean <- consumption.mean[-no.herb, ]
+# Write
+write_csv(consumption.mean, "builds/species.consumption.means.kgC.yr.km2.csv")
 
 # Species biomass consumption pr km2 [[Geometric means]]
 # [kgC / year] = [kJ/day] * [day/year] / [kJ / kgC]
-biomass.consumption.kgC.yr <- df$fmr.geo.mean * 365.25 / ME.carbon 
-plant.consumption.kgC.yr <- biomass.consumption.kgC.yr * df$Diet.Plant/100
-density <- df$density.geo.mean
-Q = density * plant.consumption.kgC.yr # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
-consumption.geo <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
-write_csv(consumption.geo, "builds/species.consumption.geo.means.kgC.yr.km2.csv")
+plant.consumption.kgC.yr.geo.mean <- df$fmr.geo.mean * 365.25 / ME.carbon  * df$Diet.Plant/100
 
+Q = df$density.geo.mean * plant.consumption.kgC.yr.geo.mean # [1 / km2] * [kgC / year] = [kgC / (km2 * year)]
+consumption.geo.mean <- bind_cols(Binomial.1.2 = df$Binomial.1.2, Q = Q)
+# Remove strict non-herbivores
+consumption.geo.mean <- consumption.geo.mean[-no.herb, ]
+# Write
+write_csv(consumption.geo.mean, "builds/species.consumption.geo.means.kgC.yr.km2.csv")

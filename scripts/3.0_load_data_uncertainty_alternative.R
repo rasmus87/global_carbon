@@ -104,30 +104,32 @@ if(full) {
 npp[] <- npp[] * 1000^2 / 10^6 # Mg Carbon / km2 / yr
 
 # Remove ranges:
-current.consumption.geo.mean.map[remove.areas] <- NA
-present.natural.consumption.geo.mean.map[remove.areas] <- NA
-# current.megafauna.consumption.map[remove.areas] <- NA
-# present.natural.megafauna.consumption.map[remove.areas] <- NA
+cu.consumption.maps$geo.mean[remove.areas] <- NA
+pn.consumption.maps$geo.mean[remove.areas] <- NA
 
-# current.mass.map[remove.areas] <- NA
-# present.natural.mass.map[remove.areas] <- NA
+cu.megafauna.consumption.maps$geo.mean[remove.areas] <- NA
+pn.megafauna.consumption.maps$geo.mean[remove.areas] <- NA
+
+cu.biomass.maps$geo.mean[remove.areas] <- NA
+pn.biomass.maps$geo.mean[remove.areas] <- NA
 
 
 # Prepare datasets for plotting ----------------------------------
 
 # Calculate change between CU and PN
-change <- (current.consumption.geo.mean.map/present.natural.consumption.geo.mean.map - 1) * 100
+change <- (cu.consumption.maps$geo.mean/pn.consumption.maps$geo.mean - 1) * 100
 # Truncate positive change
 change[change > 0] <- 0
-change[present.natural.consumption.map == 0] <- 0
+change[pn.consumption.maps$geo.mean == 0] <- -100
+plot(change)
 
 # NPP consumption (Carbon consumed / Carbon produced) [%]
 # Find the fraction
-current.npp.use <- (current.consumption.geo.mean.map)/npp * 100
-present.natural.npp.use <- (present.natural.consumption.geo.mean.map)/npp * 100
+current.npp.use <- (cu.consumption.maps$geo.mean)/npp * 100
+present.natural.npp.use <- (pn.consumption.maps$geo.mean)/npp * 100
 
-current.megafauna.npp.use <- (current.megafauna.consumption.map)/npp * 100
-present.natural.megafauna.npp.use <- (present.natural.megafauna.consumption.map)/npp * 100
+current.megafauna.npp.use <- (cu.megafauna.consumption.maps$geo.mean)/npp * 100
+present.natural.megafauna.npp.use <- (pn.megafauna.consumption.maps$geo.mean)/npp * 100
 
 # Truncate fractions above 100 %
 current.npp.use[current.npp.use[] >= 100.5] <- 101
@@ -140,16 +142,12 @@ present.natural.megafauna.npp.use[present.natural.megafauna.npp.use[] >= 100.5] 
 change.pct.point <- current.npp.use - present.natural.npp.use
 change.pct.point[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct.point[])
 
-change.pct.point2 <- (current.npp.use/present.natural.npp.use - 1) * 100
-change.pct.point2[] <- ifelse(current.npp.use[] == 101 | present.natural.npp.use[] == 101 , 101, change.pct.point2[])
-change.pct.point2[change.pct.point2 > 0] <- 0
-
 
 # Turn carbon use into data.frames for plotting (all)
 # [MgC / km2 / year]
 
 # Current
-current.consumption.df <- current.consumption.geo.mean.map %>%
+current.consumption.df <- cu.consumption.maps$geo.mean %>%
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],
@@ -158,7 +156,7 @@ current.consumption.df <- current.consumption.geo.mean.map %>%
             period = "Current")
 
 # Present natural
-present.natural.consumption.df <- present.natural.consumption.geo.mean.map %>% 
+present.natural.consumption.df <- pn.consumption.maps$geo.mean %>% 
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],
@@ -181,7 +179,7 @@ change.df <- change %>%
 
 
 # Current megafauna consumption
-current.megafauna.consumption.df <- current.megafauna.consumption.map %>%
+current.megafauna.consumption.df <- cu.megafauna.consumption.maps$geo.mean %>%
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],
@@ -190,7 +188,7 @@ current.megafauna.consumption.df <- current.megafauna.consumption.map %>%
             period = "Current")
 
 # Present natural megafauna consumption
-present.natural.megafauna.consumption.df <- present.natural.megafauna.consumption.map %>% 
+present.natural.megafauna.consumption.df <- pn.megafauna.consumption.maps$geo.mean %>% 
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],
@@ -205,7 +203,7 @@ megafauna.consumption.df <- bind_rows(current.megafauna.consumption.df,
 
 
 # Current mass
-current.mass.df <- current.mass.map %>%
+current.mass.df <- cu.biomass.maps$geo.mean %>%
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],
@@ -213,7 +211,7 @@ current.mass.df <- current.mass.map %>%
             y, 
             period = "Current")
 # Present natural mass
-present.natural.mass.df <- present.natural.mass.map %>% 
+present.natural.mass.df <- pn.biomass.maps$geo.mean %>% 
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],
@@ -252,14 +250,6 @@ npp.use <- bind_rows(current.npp.use.df,
 
 # Percentage point difference
 change.pct.df <- change.pct.point %>%
-  as("SpatialPixelsDataFrame") %>% 
-  as_tibble() %>% 
-  transmute(value = .[[1]],
-            x, 
-            y, 
-            period = "Percentage point difference")
-
-change.pct.df2 <- change.pct.point2 %>%
   as("SpatialPixelsDataFrame") %>% 
   as_tibble() %>% 
   transmute(value = .[[1]],

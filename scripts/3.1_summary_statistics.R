@@ -9,7 +9,6 @@
 (npp.use.summary <- npp.use %>% 
    group_by(period) %>%
    summarise(mean = mean(value, na.rm = T) %>% signif(3),
-             sd = sd(value, na.rm = T) %>% signif(3),
              median = median(value, na.rm= T) %>% signif(3),
              q.025 = quantile(value, .025, na.rm = T) %>% signif(3),
              q.975 = quantile(value, .975, na.rm = T) %>% signif(3),
@@ -24,7 +23,6 @@ signif(diff(npp.use.summary$median)/npp.use.summary$median[2] * 100, 2)
 (megafauna.npp.use.summary <- megafauna.npp.use %>% 
     group_by(period) %>%
     summarise(mean = mean(value, na.rm = T) %>% signif(3),
-              sd = sd(value, na.rm = T) %>% signif(3),
               median = median(value, na.rm= T) %>% signif(3),
               sum = sum(value, na.rm = T) %>% signif(3),
               q.025 = quantile(value, .025, na.rm = T) %>% signif(3),
@@ -37,13 +35,13 @@ signif(diff(megafauna.npp.use.summary$median)/megafauna.npp.use.summary$median[2
 # Megafauna NPP use compared to all fauna:
 # Current
 paste0("In the current all fauna uses ", 
-       npp.use.summary$mean[1], 
+       npp.use.summary$median[1], 
        "% of NPP, and megafauna constitutes of that ",
        signif(megafauna.npp.use.summary$mean[1]/npp.use.summary$mean[1] * 100, 2),
        "%.")
 # Present natural
 paste0("In the present natural All fauna uses ", 
-       npp.use.summary$mean[2], 
+       npp.use.summary$median[2], 
        "% of NPP, and megafauna constitutes of that ",
        signif(megafauna.npp.use.summary$mean[2]/npp.use.summary$mean[2] * 100, 2),
        "%.")
@@ -54,7 +52,6 @@ paste0("In the present natural All fauna uses ",
   mutate(value = npp.consumption.megafauna/npp.consumption) %>% 
   group_by(period) %>%
   summarise(mean = mean(value, na.rm = T) %>% signif(3),
-            sd = sd(value, na.rm = T) %>% signif(3),
             median = median(value, na.rm= T) %>% signif(3),
             q.025 = quantile(value, .025, na.rm = T) %>% signif(3),
             q.975 = quantile(value, .975, na.rm = T) %>% signif(3),
@@ -70,7 +67,6 @@ signif(diff(fraction$median)/fraction$median[2] * 100, 2)
     group_by(period) %>% 
     filter(!is.na(value)) %>%
     summarise(mean = mean(value, na.rm = T) %>% signif(2),
-              sd = sd(value, na.rm = T) %>% signif(2),
               median = median(value, na.rm= T) %>% signif(2),
               q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
               q.975 = quantile(value, .975, na.rm = T) %>% signif(2),
@@ -81,7 +77,6 @@ diff(ltw.use$median)/ltw.use$median[1]
 consumption.df %>% 
   group_by(period) %>%
   summarise(mean = mean(value, na.rm = T) %>% signif(2),
-            sd = sd(value, na.rm = T) %>% signif(2),
             median = median(value, na.rm= T) %>% signif(2),
             q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
             q.975 = quantile(value, .975, na.rm = T) %>% signif(2),

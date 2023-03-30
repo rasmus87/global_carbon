@@ -2,6 +2,8 @@
 # Run after 3.0_load.data.R
 # 29/07-2021 Rasmus Ø Pedersen
 
+library(grid)
+
 # Total carbon consumption map [MgC / km2 / year] -----------------------------------
 # Current
 current.consumption.plot <- ggplot(current.consumption.df, aes(x = x, y = y, fill = value)) +
@@ -55,9 +57,9 @@ p1 <- arrangeGrob(g11, g12, line, g13, nrow = 4, heights = c(1, 1, .01, 1))
 # p1 <- gtable_rbind(g11, g12, g13)
 arrangeGrob(p1) %>% plot
 if(full) {
-  ggsave("./output/fig1_carbon_consumption_fullx.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig1_carbon_consumption_full.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 } else {
-  ggsave("./output/fig1_carbon_consumption200x.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig1_carbon_consumption200.png", p1, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
 
 
@@ -121,14 +123,14 @@ pct.pt.diffrence.plot2 <- ggplot(change.pct.df2 %>% mutate(value = na_if(value, 
 
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
-g23 <- ggplotGrob(pct.pt.diffrence.plot2)
+g23 <- ggplotGrob(pct.pt.diffrence.plot)
 line <- linesGrob(y = 0, gp = gpar(lty = 2))
 p2 <- arrangeGrob(g21, g22, line, g23, nrow = 4, heights = c(1, 1, .01, 1))
 # p2 <- gtable_rbind(g21, g22, g23)
 arrangeGrob(p2) %>% plot
 if(full) {
-  ggsave("./output/fig2_fraction_npp_consumed_fullx2.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig2_fraction_npp_consumed_full.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 } else {
-  ggsave("./output/fig2_fraction_npp_consumed200x2.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
+  ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
 

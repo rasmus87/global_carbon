@@ -13,8 +13,8 @@ library(viridis)  # better colors for everyone
 library(gridExtra)
 
 
-
 # Load data ---------------------------------------------------------------
+
 
 # Load traits
 df <- read_csv("builds/data.csv", col_types = cols())
@@ -22,60 +22,63 @@ df <- read_csv("builds/data.csv", col_types = cols())
 # Load consumption data
 consumption.samples <- read_csv("builds/sampled.consumption.distribution.kgC.yr.km2.csv", col_types = cols()) # [kgC / (km2 * year)]
 
-# Summarize consumption
-consumption.summary <- consumption.samples %>%
-  transmute(Binomial.1.2,
-            mean = rowMeans(.[, -1]),
-            median = apply(.[, -1], 1, median),
-            ci.lw = apply(.[, -1], 1, quantile, probs = .025),
-            ci.hi = apply(.[, -1], 1, quantile, probs = .975))
 # Alignment sanity check 
 stopifnot(all(consumption.summary$Binomial.1.2 == df$Binomial.1.2))
 
 # Estimate this in terms of plant consumtion
-consumption <- consumption.summary %>% 
-  mutate(Q.plant = median * df$Diet.Plant/100,
-         ci.lw.plant = ci.lw * df$Diet.Plant/100,
-         ci.hi.plant = ci.hi * df$Diet.Plant/100)
-
-
-# Load density data
-density.samples <- read_csv("builds/sampled.density.distribution.csv", col_types = cols()) # [kgC / (km2 * year)]
-# Alignment sanity check 
-stopifnot(all(density.samples$Binomial.1.2 == df$Binomial.1.2))
-
-# Transform to biomass
-mass.samples <- density.samples[, -1] * as.numeric(df$Mass.g)/1e6 # [Mg / km2]
-
-mass.samples <- mass.samples %>% as_tibble() %>%  mutate(Binomial.1.2 = df$Binomial.1.2, .before = "sample.1")
-
-# Summarize mammal biomass
-mass.summary <- mass.samples %>%
-  transmute(Binomial.1.2,
-            median = apply(.[, -1], 1, median),
-            ci.lw = apply(.[, -1], 1, quantile, probs = .025),
-            ci.hi = apply(.[, -1], 1, quantile, probs = .975))
-
-
+consumption <- consumption.samples %>% 
+  mutate_if(is.numeric, function(.) . * df$Diet.Plant/100 * 10^-3)  # Plant: [MgC / (km2 * year)]
 
 
 # Load species maps and calculate consumption maps ------------------------
 
 # Current maps
 current.maps <- read_rds("builds/current.maps.filtered.edge.lim.rds")
-current.consumption <- current.maps * consumption$Q.plant
-current.consumption.lw <- current.maps * consumption$ci.lw.plant
-current.consumption.hi <- current.maps * consumption$ci.hi.plant
 
-current.mass <- current.maps * mass.summary$median
+tic()
+current.consumption.samples <- apply(consumption[, -1], 2, function(.) . * current.maps[, ]) 
+toc()
+tic()
+current.consumption.maps <- sapply(current.consumption.samples, colSums)
+toc()
+tic()
+map.sd <- apply(current.consumption.maps, 1, sd)
+map.mean <- apply(current.consumption.maps, 1, mean)
+map.median <- apply(current.consumption.maps, 1, median)
+map.geo.mean <- apply(current.consumption.maps, 1, FUN = function(.) exp(mean(log(.))))
+toc()
+
+y <- base.map
+y[] <- map.median
+plot(y)
+z <- base.map
+z[] <- map.mean
+plot(z)
+gm <- base.map
+gm[] <- map.geo.mean
+plot(gm)
+
+x.current.model <- x
+y.new.model <- y
+z.new.model.mean <- z
+
+plot(x)
+plot(y/z)
+
+plot(gm/y)
+
+test <- z/y
+mean(test[], na.rm = T)
+test %>% density %>% plot
+
+test <- (y-x)/x*100
+test %>% density %>% plot
+plot(test)
 
 # Present natural maps
 present.natural.maps <- read_rds("builds/present.natural.maps.filtered.edge.lim.rds")
-present.natural.consumption <- present.natural.maps * consumption$Q.plant
-present.natural.consumption.lw <- present.natural.maps * consumption$ci.lw.plant
-present.natural.consumption.hi <- present.natural.maps * consumption$ci.hi.plant
 
-present.natural.mass <- present.natural.maps * mass.summary$median
+present.natural.consumption <- apply(consumption[1:10, -1], 2, function(.) . * present.natural.maps[1:10, 40070+1:10]) 
 
 # Base map
 base.map <- raster("builds/base_map.tif")

@@ -76,6 +76,13 @@ paste0("Present natural mass: ", signif(mass.pn[2], 2), " PgC (95%-CI: ", signif
 paste0("Current potential mass: ", signif(mass.cu[2], 2), " PgC (95%-CI: ", signif(mass.cu[1], 2), "-", signif(mass.cu[3], 2), ")")
 paste0("Current without CR/EN/VU mass: ", signif(mass.cu.r[2], 2), " PgC (95%-CI: ", signif(mass.cu.r[1], 2), "-", signif(mass.cu.r[3], 2), ")")
 
+# Wet in x10^11
+density.samples <- 10^log10dens.samples # km^-2
+mass.pr.cell.samples <- density.samples * mass.Pg * cell.area * 10 # 10^11 g Carbon
+mass.pr.cell.summary <- apply(mass.pr.cell.samples, 1, function(x) c(quantile(x, 0.025), geo.mean = exp(mean(log(x))), quantile(x, 0.975)))
+mass.pn <- colSums(t(mass.pr.cell.summary) * n.cells.pn)
+paste0("Present natural mass: ", signif(mass.pn[2], 2), " x10^11 kg wet (95%-CI: ", signif(mass.pn[1], 2), "-", signif(mass.pn[3], 2), ")")
+
 # Proboscidea only
 density.samples <- 10^log10dens.samples # km^-2
 density.samples <- density.samples * (df$Order.1.2 == "Proboscidea")

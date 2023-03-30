@@ -19,168 +19,26 @@ library(gridExtra)
 # Load traits
 df <- read_csv("builds/data.csv", col_types = cols())
 
-# Make a subset excluding strict non herbivores
-# Strict non-herbivores
-no.herb <- which(df$Diet.Plant == 0)
-df.herb <- df[-no.herb, ]
-
-# Load consumption data
-consumption.samples <- read_csv("builds/sampled.consumption.distribution.kgC.yr.km2.csv", col_types = cols()) # [kgC / (km2 * year)]
-
-# Alignment sanity check 
-stopifnot(all(names(consumption.samples) == df.herb$Binomial.1.2))
-
-# Summarize consumption
-consumption.summary <- tibble(Binomial.1.2 = names(consumption.samples),
-                              mean = colMeans(consumption.samples),
-                              geo.mean = apply(consumption.samples, 2, FUN = function(.) exp(mean(log(.)))),
-                              median = apply(consumption.samples, 2, median),
-                              ci.lw = apply(consumption.samples, 2, quantile, probs = .025),
-                              ci.hi = apply(consumption.samples, 2, quantile, probs = .975))
-
-# Load density data
-density.samples <- read_csv("builds/sampled.density.distribution.csv", col_types = cols()) # [kgC / (km2 * year)]
-
-# Alignment sanity check 
-stopifnot(all(names(density.samples) == df$Binomial.1.2))
-
-# Transform to biomass [Mg / km2]
-mass.samples <- sweep(density.samples, MARGIN = 2, df$Mass.g/1e6, `*`)
-
-# # Summarize mammal biomass
-mass.summary <- tibble(Binomial.1.2 = names(mass.samples),
-                       mean = colMeans(mass.samples),
-                       geo.mean = apply(mass.samples, 2, FUN = function(.) exp(mean(log(.)))),
-                       median = apply(mass.samples, 2, median),
-                       ci.lw = apply(mass.samples, 2, quantile, probs = .025),
-                       ci.hi = apply(mass.samples, 2, quantile, probs = .975))
-
-
-
-
-# Load species maps and calculate consumption maps ------------------------
-
 # Base map
 base.map <- raster("builds/base_map.tif")
-temp.map <- base.map
 
-# New land map
+# Land map
 land <- raster("builds/land.tif")
-land.v <- land[]
-land.i <- which(!is.na(land.v))
 land.df <- as(land, "SpatialPixelsDataFrame") # [MgC / km2 / year]
 land.df <- as_tibble(land.df)
 land.df$land <- NA
 
+# Load summary stats maps
+maps <- list(cu.consumption.maps, pn.consumption.maps, 
+             cu.megafauna.consumption.maps, pn.megafauna.consumption.maps,
+             cu.biomass.maps, pn.biomass.maps)
 
-# Current maps
-current.maps <- read_rds("builds/current.maps.filtered.edge.lim.rds")
-current.maps.herb <- current.maps[-no.herb, ]
-
-# Present natural maps
-present.natural.maps <- read_rds("builds/present.natural.maps.filtered.edge.lim.rds")
-present.natural.maps.herb <- present.natural.maps[-no.herb, ]
-
-
-# Calculate total consumption per grid cell per map -------------------------------
-
-timestamp()
-tic()
-# Calculate a current consumption map for every sample for every species
-current.consumption.samples.map <- apply(consumption.samples[1:1000, ], 1, function(.) . * current.maps.herb[, ]) 
-current.consumption.samples.map <- c(current.consumption.samples.map, apply(consumption.samples[1:1000 + 1000, ], 1, function(.) . * current.maps.herb[, ]))
-current.consumption.samples.map <- c(current.consumption.samples.map, apply(consumption.samples[1:1000 + 2000, ], 1, function(.) . * current.maps.herb[, ]))
-gc()
-toc()
-tic()
-# Sum total current consumption for each sample
-current.consumption.maps <- sapply(current.consumption.samples.map, colSums)
-rm(current.consumption.samples.map)
-gc()
-# Remove oceans
-current.consumption.maps.land <- current.consumption.maps[land.i, ] / 1000
-toc()
-
-timestamp()
-tic()
-# Calculate a present natural consumption map for every sample for every species
-present.natural.consumption.samples.map <- apply(consumption.samples[1:1000, ], 1, function(.) . * present.natural.maps.herb[, ]) 
-present.natural.consumption.samples.map <- c(present.natural.consumption.samples.map, apply(consumption.samples[1:1000 + 1000, ], 1, function(.) . * present.natural.maps.herb[, ]))
-present.natural.consumption.samples.map <- c(present.natural.consumption.samples.map, apply(consumption.samples[1:1000 + 2000, ], 1, function(.) . * present.natural.maps.herb[, ]))
-gc()
-toc()
-tic()
-# Sum total present natural consumption for each sample
-present.natural.consumption.maps <- sapply(present.natural.consumption.samples.map, colSums)
-rm(present.natural.consumption.samples.map)
-gc()
-# Remove oceans
-present.natural.consumption.maps.land <- present.natural.consumption.maps[land.i, ] / 1000
-toc()
-
-
-# Calculate current summary statistics
-tic()
-current.consumption.mean <- apply(current.consumption.maps.land, 1, mean)
-current.consumption.geo.mean <- apply(current.consumption.maps.land, 1, FUN = function(.) exp(mean(log(.))))
-current.consumption.geo.sd <- apply(current.consumption.maps.land, 1, FUN = function(.) exp(sd(log(.))))
-current.consumption.025 <- apply(current.consumption.maps.land, 1, quantile, probs = .025)
-current.consumption.975 <- apply(current.consumption.maps.land, 1, quantile, probs = .975)
-
-temp.map <- base.map
-
-temp.map[land.i] <- current.consumption.mean
-current.consumption.mean.map <- temp.map
-
-temp.map[land.i] <- current.consumption.geo.mean
-current.consumption.geo.mean.map <- temp.map
-
-temp.map[land.i] <- current.consumption.geo.sd
-current.consumption.geo.sd.map <- temp.map
-
-temp.map[land.i] <- current.consumption.025
-current.consumption.025.map <- temp.map
-
-temp.map[land.i] <- current.consumption.975
-current.consumption.975.map <- temp.map
-toc()
-
-
-# Calculate present.natural summary statistics
-tic()
-present.natural.consumption.mean <- apply(present.natural.consumption.maps.land, 1, mean)
-present.natural.consumption.geo.mean <- apply(present.natural.consumption.maps.land, 1, FUN = function(.) exp(mean(log(.))))
-present.natural.consumption.geo.sd <- apply(present.natural.consumption.maps.land, 1, FUN = function(.) exp(sd(log(.))))
-present.natural.consumption.025 <- apply(present.natural.consumption.maps.land, 1, quantile, probs = .025)
-present.natural.consumption.975 <- apply(present.natural.consumption.maps.land, 1, quantile, probs = .975)
-
-temp.map <- base.map
-
-temp.map[land.i] <- present.natural.consumption.mean
-present.natural.consumption.mean.map <- temp.map
-
-temp.map[land.i] <- present.natural.consumption.geo.mean
-present.natural.consumption.geo.mean.map <- temp.map
-
-temp.map[land.i] <- present.natural.consumption.geo.sd
-present.natural.consumption.geo.sd.map <- temp.map
-
-temp.map[land.i] <- present.natural.consumption.025
-present.natural.consumption.025.map <- temp.map
-
-temp.map[land.i] <- present.natural.consumption.975
-present.natural.consumption.975.map <- temp.map
-toc()
-
+maps <- read_rds("builds/summary.stats.maps.rds")
+list2env(maps, globalenv())
+rm(maps)
 
 
 # Load world map overlay and set up plotting theme ------------------------
-
-# Load world shape overlay
-# world.map <- ne_countries(scale = 110, returnclass = "sf") %>% 
-#   st_transform(st_crs(base.map)) %>% 
-#   st_union()
-
 world.map <- giscoR::gisco_get_countries() %>%
   st_union() %>% 
   st_transform(st_crs(base.map))

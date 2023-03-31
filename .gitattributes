@@ -1,2 +1,5 @@
 sampled.consumption.distribution.kgC.yr.km2.csv filter=lfs diff=lfs merge=lfs -text
 sampled.density.distribution.csv filter=lfs diff=lfs merge=lfs -text
+
+cu.mass.maps.land.rds filter=lfs diff=lfs merge=lfs -text
+pn.mass.maps.land.rds filter=lfs diff=lfs merge=lfs -text

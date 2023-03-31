@@ -34,15 +34,15 @@ pn.mass.PgC <- tibble(mass.PgC = colSums(pn.mass.maps.land[-rm.land.index, ]) * 
                       period = "Present natural")
 mass.PgC <- bind_rows(cu.mass.PgC, pn.mass.PgC)
 
-mass.PgC %>%
+(mass.PgC.summary <- mass.PgC %>%
   group_by(period) %>% 
   summarise(geo.mean = exp(mean(log(mass.PgC))),
             geo.sd = exp(sd(log(mass.PgC))),
             q025 = quantile(mass.PgC, probs = .025),
-            q975 = quantile(mass.PgC, probs = .975))
+            q975 = quantile(mass.PgC, probs = .975)))
 
 
-
+mass.PgC.summary %>% mutate_if(is.numeric, ~ ./wet_to_carbon * 1000) # [Mt wet mass]
 
 
 # 

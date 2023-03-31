@@ -108,19 +108,6 @@ pct.pt.diffrence.plot <- ggplot(change.pct.df %>% mutate(value = na_if(value, 10
   geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
   coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
 
-pct.pt.diffrence.plot2 <- ggplot(change.pct.df2 %>% mutate(value = na_if(value, 101)), aes(x = x, y = y, fill = value)) +
-  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
-  geom_tile() +
-  scale_fill_viridis(name = Difference~('%'),
-                     na.value = "hotpink",
-                     option = "turbo",
-                     direction = -1) +
-  theme_map() +
-  labs(subtitle = "c) Change a/b - 1") +
-  theme(plot.subtitle = element_text(face = "bold", size = 10)) +
-  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
-  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
-
 g21 <- ggplotGrob(frac.npp.cu.consumption.plot)
 g22 <- ggplotGrob(frac.npp.pn.consumption.plot)
 g23 <- ggplotGrob(pct.pt.diffrence.plot)
@@ -133,4 +120,45 @@ if(full) {
 } else {
   ggsave("./output/fig2_fraction_npp_consumed200.png", p2, width = 183, height = 210, units = "mm", dpi = 600, scale = 1.1)
 }
+
+
+
+
+
+
+# Appendix uncertainty ----------
+# Current
+cu.consumption.geo.sd.plot <- ggplot(cu.consumption.geo.sd.df, aes(x = x, y = y, fill = value)) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
+  geom_tile() +
+  scale_fill_viridis(name = "Goemetric SD factor",
+                     na.value = "hotpink",
+                     limits = range(0, 2),
+                     option = "turbo") +
+  theme_map() +
+  labs(subtitle = "a) Current") +
+  theme(plot.subtitle = element_text(face = "bold", size = 10)) +
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
+
+# Present natural
+pn.consumption.geo.sd.plot <- ggplot(pn.consumption.geo.sd.df, aes(x = x, y = y, fill = value)) +
+  geom_tile(data = land.df, aes(fill = NULL, period = NULL), fill = "grey90") +
+  geom_tile() +
+  scale_fill_viridis(name = "Goemetric SD factor",
+                     na.value = "hotpink",
+                     limits = range(0, 2),
+                     option = "turbo") +
+  theme_map() +
+  labs(subtitle = "b) Present-natural") +
+  theme(plot.subtitle = element_text(face = "bold", size = 10)) +
+  geom_sf(data = world.map, inherit.aes = F, col = "black", fill = "NA", lwd = .25) +
+  coord_sf(ylim = range(land.df$y), xlim = range(land.df$x) * 1.02, expand = FALSE)
+
+
+g21 <- ggplotGrob(cu.consumption.geo.sd.plot)
+g22 <- ggplotGrob(pn.consumption.geo.sd.plot)
+p3 <- arrangeGrob(g21, g22, nrow = 2, heights = c(1, 1))
+arrangeGrob(p3) %>% plot
+ggsave("./output/appendix_consumption.geo.sd.png", p3, width = 183, height = 140, units = "mm", dpi = 600, scale = 1.1)
 

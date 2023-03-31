@@ -154,7 +154,9 @@ pn.mass.maps.land <- sapply(pn.mass.samples.map, colSums) # [Mg / km2]
 rm(pn.mass.samples.map)
 gc()
 
-
+# Write full mass maps for further calculations in 3.2 Global mammal biomass
+write_rds(pn.mass.maps.land, "builds/pn.mass.maps.land.rds")
+write_rds(pn.mass.maps.land, "builds/pn.mass.maps.land.rds")
 
 
 

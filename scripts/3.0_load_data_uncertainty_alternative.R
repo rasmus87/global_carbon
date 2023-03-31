@@ -284,6 +284,33 @@ megafauna.npp.use <- bind_rows(current.megafauna.npp.use.df,
 
 
 
+# Uncertainty
+
+# Current
+cu.consumption.geo.sd.df <- cu.consumption.maps$geo.sd %>%
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Current")
+
+# Present natural
+pn.consumption.geo.sd.df <- pn.consumption.maps$geo.sd %>%
+  as("SpatialPixelsDataFrame") %>% 
+  as_tibble() %>% 
+  transmute(value = .[[1]],
+            x, 
+            y, 
+            period = "Present natural")
+
+# Combined
+consumption.geo.sd.df <- bind_rows(cu.consumption.geo.sd.df, 
+                                   pn.consumption.geo.sd.df)
+
+
+
+
 # Last of the wild --------------------------------------------------------
 
 # Load and force align to basemap of LTW realms

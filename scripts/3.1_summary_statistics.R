@@ -74,6 +74,12 @@ consumption.df %>%
             n = n())
 
 
+# Depression of consumption global median
+change.df %>% 
+  summarise(median = median(value, na.rm= T) %>% signif(2),
+            q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
+            q.975 = quantile(value, .975, na.rm = T) %>% signif(2))
+
 # 
 # 
 # # Calculate total global consumption --------------------------------------

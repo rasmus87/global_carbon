@@ -22,10 +22,11 @@ r <- raster("builds/base_map.tif")
 serengeti <- spTransform(serengeti, projection(r))
 cell <- cellFromXY(r, serengeti)
 
-paste0("Current: ", round(current.consumption.map[cell]), " MgC/km2/yr")
-paste0("Current low .025: ", round(current.consumption.map.lw[cell]), " MgC/km2/yr")
-paste0("Current low .925: ", round(current.consumption.map.hi[cell]), " MgC/km2/yr")
-paste0("Present natural: ", round(present.natural.consumption.map[cell]), " MgC/km2/yr")
+paste0("Current: ", round(cu.consumption.maps$geo.mean[cell]), " MgC/km2/yr")
+paste0("Current low .025: ", round(cu.consumption.maps$q025[cell]), " MgC/km2/yr")
+paste0("Current low .925: ", round(cu.consumption.maps$q975[cell]), " MgC/km2/yr")
+
+paste0("Present natural: ", round(pn.consumption.maps$geo.mean[cell]), " MgC/km2/yr")
 
 paste0("Current: ", round(current.npp.use[cell]), "% of NPP")
 paste0("Present natural: ", round(present.natural.npp.use[cell]), "% of NPP")

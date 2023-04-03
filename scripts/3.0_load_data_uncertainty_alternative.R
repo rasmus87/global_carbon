@@ -29,10 +29,6 @@ land.df <- as_tibble(land.df)
 land.df$land <- NA
 
 # Load summary stats maps
-maps <- list(cu.consumption.maps, pn.consumption.maps, 
-             cu.megafauna.consumption.maps, pn.megafauna.consumption.maps,
-             cu.biomass.maps, pn.biomass.maps)
-
 maps <- read_rds("builds/summary.stats.maps.rds")
 list2env(maps, globalenv())
 rm(maps)

@@ -2,7 +2,9 @@
 # Does not need to be run for 3.2+
 # 27/07-2021 Rasmus Ø Pedersen
 
-
+# Libraries
+library(raster)
+library(tidyverse)
 
 # Load and sample density data --------------------------------------------
 
@@ -10,15 +12,15 @@ land <- raster("builds/land.tif")
 land.v <- land[]
 land.i <- which(!is.na(land.v))
 
-cell.area <- prod(res(base.map)) * 10^-6 # km^2
+cell.area <- prod(res(land)) * 10^-6 # km^2
 wet_to_carbon <- .50 * .30 # carbon.mass / wet.mass
 
 
-# Naive across summary cells
-mass.df %>%
-  group_by(period) %>% 
-  summarise(wet.mass.Mg.km2 = sum(value),
-            carbon.mass.Pg.total = wet.mass.Mg.km2 * wet_to_carbon * cell.area * 10^-9)
+# # Naive across summary cells
+# mass.df %>%
+#   group_by(period) %>% 
+#   summarise(wet.mass.Mg.km2 = sum(value),
+#             carbon.mass.Pg.total = wet.mass.Mg.km2 * wet_to_carbon * cell.area * 10^-9)
 
 
 # Find indexes of removed land in the land only maps
@@ -41,6 +43,9 @@ mass.PgC <- bind_rows(cu.mass.PgC, pn.mass.PgC)
             q025 = quantile(mass.PgC, probs = .025),
             q975 = quantile(mass.PgC, probs = .975)))
 
+mass.PgC.summary %>% mutate_if(is.numeric, ~ signif(., 2)) # [Mt C]
+
+mass.PgC.summary %>% mutate_if(is.numeric, ~ . * 1000) # [Mt C]
 
 mass.PgC.summary %>% mutate_if(is.numeric, ~ ./wet_to_carbon * 1000) # [Mt wet mass]
 

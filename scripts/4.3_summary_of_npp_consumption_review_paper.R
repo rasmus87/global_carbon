@@ -70,3 +70,27 @@ consumption %>%
             n = n()) %>% 
   signif(2)
 
+# Make a histogram of the data
+consumption %>% 
+  filter(compartment == "above.and.below") %>%
+  ggplot(aes(`%NPP consumed`, fill = `community type`)) +
+    geom_histogram(aes(y = ..density../17), breaks = seq(0,30,1)) +
+    theme_bw() +
+    scale_fill_discrete(name = NULL) +
+    scale_y_continuous(breaks = seq(0, 10, 3)) +
+    geom_density(data = ltw %>% filter(period == "Current"), aes(x = value, fill = NULL, col = "Current estimate"), fill = NA) +
+  scale_color_manual(name = NULL, values = "black") +
+  theme(legend.position = c(.75, .75))
+
+ltw %>% 
+  filter(period == "Current") %>%
+  summarise(min = min(value),
+            q025 = quantile(value, 0.025),
+            q25 = quantile(value, 0.25),
+            mean = mean(value),
+            med = median(value),
+            q75 = quantile(value, 0.75),
+            q975 = quantile(value, 0.975),
+            max = max(value),
+            n = n()) %>% 
+  signif(2)

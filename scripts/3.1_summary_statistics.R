@@ -22,11 +22,19 @@
               q.975 = quantile(value, .975, na.rm = T) %>% signif(2),
               n = n()))
 
-# Current
-# PN use is x times higher than CU use
-npp.use.summary$median[2]/npp.use.summary$median[1]
-# Which is x % reduction
-signif(diff(npp.use.summary$median)/npp.use.summary$median[2] * 100, 2)
+# Median reduction across all cells
+npp.use %>%
+  pivot_wider(values_from = value, names_from = period) %>% 
+  mutate(diff = (Current - `Present natural`) /`Present natural` * 100) %>% 
+  summarise(median = median(diff, na.rm= T) %>% signif(2),
+            q.025 = quantile(diff, .025, na.rm = T) %>% signif(2),
+            q.975 = quantile(diff, .975, na.rm = T) %>% signif(2))
+
+# # Current
+# # PN use is x times higher than CU use
+# npp.use.summary$median[2]/npp.use.summary$median[1]
+# # Which is x % reduction
+# signif(diff(npp.use.summary$median)/npp.use.summary$median[2] * 100, 2)
 
 paste0("In the current all fauna uses ", 
        npp.use.summary$median[1], "% (95%-CI: ", npp.use.summary$q.025[1], " - ", npp.use.summary$q.975[1], ") ",
@@ -79,6 +87,30 @@ change.df %>%
   summarise(median = median(value, na.rm= T) %>% signif(2),
             q.025 = quantile(value, .025, na.rm = T) %>% signif(2),
             q.975 = quantile(value, .975, na.rm = T) %>% signif(2))
+
+
+# Librated NPP in a median cell
+npp.use %>%
+  pivot_wider(values_from = value, names_from = period) %>% 
+  mutate(diff = `Present natural` - Current) %>% 
+  summarise(median = median(diff),
+            mean = mean(diff))
+
+
+# Median decrease in megafaune NPP use per cell
+megafauna.npp.use %>%
+  pivot_wider(values_from = value, names_from = period) %>% 
+  mutate(diff = (`Present natural` - Current) / `Present natural`) %>% 
+  summarise(median = median(diff, na.rm = T),
+            mean = mean(diff, na.rm = T))
+
+# Median decrease in NPP use per cell ltw
+ltw %>%
+  pivot_wider(values_from = value, names_from = period) %>% 
+  mutate(diff = (`Present natural` - Current) /`Present natural` * 100) %>% 
+  summarise(median = median(diff, na.rm= T) %>% signif(2),
+            q.025 = quantile(diff, .025, na.rm = T) %>% signif(2),
+            q.975 = quantile(diff, .975, na.rm = T) %>% signif(2))
 
 # 
 # 
